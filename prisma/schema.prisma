@@ -1,0 +1,40 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model QuizSession {
+  id         String   @id @default(cuid())
+  createdAt  DateTime @default(now())
+  expiresAt  DateTime
+  status     SessionStatus @default(active)
+  results    QuizResult[]
+}
+
+model Question {
+  id        Int      @id @default(autoincrement())
+  text      String
+  options   Json
+  createdAt DateTime @default(now())
+}
+
+model QuizResult {
+  id         Int      @id @default(autoincrement())
+  sessionId  String
+  phone      String
+  answers    Json
+  createdAt  DateTime @default(now())
+  QuizSession QuizSession @relation(fields: [sessionId], references: [id])
+}
+
+enum SessionStatus {
+  active
+  completed
+}
