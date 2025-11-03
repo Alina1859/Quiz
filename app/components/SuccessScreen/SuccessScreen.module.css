@@ -1,0 +1,71 @@
+.successScreen {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 100%;
+}
+
+.title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 48px;
+  font-weight: 400;
+  line-height: 48px;
+  color: var(--color-text-default);
+  text-transform: uppercase;
+  margin: 0;
+  margin-bottom: 16px;
+}
+
+.message {
+  font-family: 'Inter Tight', sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 24px;
+  color: var(--color-text-default);
+  margin: 0;
+  margin-bottom: 40px;
+  opacity: 0.8;
+}
+
+.buttonWrapper {
+  margin-top: auto;
+}
+
+@media (max-width: 768px) {
+  .successScreen {
+    padding: 20px;
+  }
+
+  .title {
+    font-size: 32px;
+    line-height: 32px;
+    margin-bottom: 12px;
+  }
+
+  .message {
+    font-size: 14px;
+    line-height: 20px;
+    margin-bottom: 32px;
+  }
+}
+
+@media (max-width: 480px) {
+  .successScreen {
+    padding: 16px;
+  }
+
+  .title {
+    font-size: 24px;
+    line-height: 24px;
+    margin-bottom: 12px;
+  }
+
+  .message {
+    font-size: 14px;
+    line-height: 20px;
+    margin-bottom: 24px;
+  }
+}
+
+

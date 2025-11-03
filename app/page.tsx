@@ -1,31 +1,46 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import Image from 'next/image'
+import styles from './page.module.css'
+import OfferCard from './components/OfferCard/OfferCard'
+import QuizPanel from './components/QuizPanel/QuizPanel'
 
 export default function Home() {
-	const [loading, setLoading] = useState(false)
-	const router = useRouter()
-	async function startQuiz() {
-		try {
-			setLoading(true)
-			const res = await fetch('/api/quiz/start', { method: 'POST' })
-			if (!res.ok) {
-				const errorText = await res.text()
-				throw new Error('Failed to start')
-			}
-			router.push('/quiz')
-		} catch (error) {
-		} finally {
-			setLoading(false)
-		}
-	}
-	return (
-		<div style={{ display: 'flex', minHeight: '80vh', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: 12 }}>
-			<h1>Элитная недвижимость Дубая</h1>
-			<button onClick={startQuiz} disabled={loading} style={{ padding: '12px 20px', fontSize: 16 }}>
-				{loading ? 'Запуск...' : 'Начать квиз'}
-			</button>
-		</div>
-	)
+  const [isQuizOpen, setIsQuizOpen] = useState(false)
+
+  const handleStartQuiz = () => {
+    setIsQuizOpen(true)
+  }
+
+  const handleCloseQuiz = () => {
+    setIsQuizOpen(false)
+  }
+
+  const handleResetQuiz = () => {
+    setIsQuizOpen(false)
+    // Состояние сбросится автоматически в QuizPanel при закрытии
+  }
+
+  return (
+    <main className={styles.main}>
+      <div className={`${styles.backgroundContainer} ${isQuizOpen ? styles.slideLeft : ''}`}>
+      </div>
+      
+      <div className={styles.logoContainer}>
+        <Image
+          src="/images/Logo.svg"
+          alt="Logo"
+          width={72}
+          height={24}
+          className={styles.logo}
+        />
+      </div>
+      
+      <OfferCard onStartClick={handleStartQuiz} isQuizOpen={isQuizOpen} />
+      
+      <QuizPanel isOpen={isQuizOpen} onClose={handleCloseQuiz} onReset={handleResetQuiz} />
+    </main>
+  )
 }
+

@@ -2,45 +2,61 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/app/lib/prisma'
 
 export async function POST(req: NextRequest) {
-	const sessionId = req.cookies.get('sessionId')?.value
-	
-	if (!sessionId) {
-		return NextResponse.json({ message: 'Unauthorized' }, { status: 401 })
-	}
-	
-	const session = await prisma.quizSession.findUnique({ where: { id: sessionId } })
-	if (!session || session.status !== 'active' || session.expiresAt <= new Date()) {
-		return NextResponse.json({ message: 'Invalid or expired session.' }, { status: 403 })
-	}
-	
 	try {
-		const { answers, phone } = await req.json()
+		const { answers, name, phone, contactMethod } = await req.json()
+		
+		// Валидация
+		if (!answers || !name || !phone || !contactMethod) {
+			return NextResponse.json(
+				{ message: 'Missing required fields' },
+				{ status: 400 }
+			)
+		}
+
+		// Получаем вопросы в правильном порядке
+		const questions = await prisma.question.findMany({ 
+			orderBy: { id: 'asc' } 
+		})
+		
+		// Создаем массив ответов в правильном порядке
+		const orderedAnswers = questions.map((question, index) => ({
+			questionId: question.id,
+			questionText: question.text,
+			questionNumber: index + 1,
+			answer: answers[question.id] || null
+		})).filter(item => item.answer !== null)
+
+		// Создаем новую сессию для результата
+		const session = await prisma.quizSession.create({
+			data: {
+				expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 часа
+				status: 'active',
+			},
+		})
 		
 		await prisma.quizResult.create({
 			data: {
-				sessionId,
+				sessionId: session.id,
 				phone,
-				answers,
+				answers: {
+					answers: orderedAnswers,
+					name,
+					contactMethod,
+				},
 			},
 		})
 		
 		await prisma.quizSession.update({
-			where: { id: sessionId },
+			where: { id: session.id },
 			data: { status: 'completed' },
 		})
 		
-		const response = NextResponse.json({ message: 'Quiz submitted successfully.' })
-		
-		response.cookies.set('sessionId', '', {
-			httpOnly: true,
-			secure: process.env.NODE_ENV === 'production',
-			sameSite: 'lax',
-			path: '/',
-			expires: new Date(0),
+		return NextResponse.json({ 
+			message: 'Quiz submitted successfully.',
+			sessionId: session.id
 		})
-		
-		return response
 	} catch (e) {
+		console.error('Error submitting quiz:', e)
 		return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 })
 	}
 }
