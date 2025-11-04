@@ -1,5 +1,5 @@
 import styles from './OfferCard.module.css'
-import Button from '../Button/Button'
+import MainButton from '../Buttons/MainButton/MainButton'
 
 interface OfferCardProps {
   onStartClick: () => void
@@ -17,12 +17,13 @@ export default function OfferCard({ onStartClick, isQuizOpen }: OfferCardProps) 
         Ответьте на несколько вопросов, и мы подберём лучшие варианты от застройщиков с актуальными ценами и рассрочкой 0%
       </p>
       
-      <div className={styles.buttonWrapper}>
-        <Button onClick={onStartClick}>Начать подбор</Button>
-      </div>
+      <MainButton onClick={onStartClick}>Начать подбор</MainButton>
       
       <p className={styles.features}>
-        Без комиссии • Только проверенные застройщики • Юридическое сопровождение сделки • Сертификат DLD
+        Без комиссии • Только проверенные застройщики •
+      </p>
+      <p className={styles.features}>
+        Юридическое сопровождение сделки • Сертификат DLD
       </p>
     </div>
   )

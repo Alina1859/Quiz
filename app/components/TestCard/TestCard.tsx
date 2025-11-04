@@ -1,5 +1,7 @@
 import styles from './TestCard.module.css'
-import Button from '../Button/Button'
+import MainButton from '../Buttons/MainButton/MainButton'
+import OptionButton from '../Buttons/OptionButton/OptionButton'
+import BackButton from '../Buttons/BackButton/BackButton'
 
 interface TestCardProps {
   step: number
@@ -9,6 +11,7 @@ interface TestCardProps {
   selectedOption: string | null
   onOptionSelect: (option: string) => void
   onNext: () => void
+  onPrevious?: () => void
 }
 
 export default function TestCard({ 
@@ -18,32 +21,44 @@ export default function TestCard({
   options,
   selectedOption,
   onOptionSelect,
-  onNext
+  onNext,
+  onPrevious
 }: TestCardProps) {
   return (
     <div className={styles.testCard}>
-      <div className={styles.stepIndicator}>
-        Шаг {step} из {totalSteps}
-      </div>
-      
-      <h2 className={styles.question}>{question}</h2>
-      
-      <div className={styles.options}>
-        {options.map((option, index) => (
-          <button 
-            key={index} 
-            className={`${styles.optionButton} ${selectedOption === option ? styles.selected : ''}`}
-            onClick={() => onOptionSelect(option)}
-          >
-            {option}
-          </button>
-        ))}
+      <div className={styles.contentWrapper}>
+        <div className={styles.stepIndicator}>
+          Шаг {step} из {totalSteps}
+        </div>
+        
+        <h2 className={styles.question}>{question}</h2>
+        
+        <div className={styles.options}>
+          {options.map((option, index) => (
+            <OptionButton
+              key={index}
+              onClick={() => onOptionSelect(option)}
+              selected={selectedOption === option}
+            >
+              {option}
+            </OptionButton>
+          ))}
+        </div>
       </div>
 
       <div className={styles.buttonWrapper}>
-        <Button onClick={onNext} disabled={!selectedOption}>
-          Далее
-        </Button>
+        {step > 1 && onPrevious ? (
+          <div className={styles.buttonsContainer}>
+            <BackButton onClick={onPrevious} />
+            <MainButton onClick={onNext} disabled={!selectedOption}>
+              Дальше
+            </MainButton>
+          </div>
+        ) : (
+          <MainButton onClick={onNext} disabled={!selectedOption}>
+            Дальше
+          </MainButton>
+        )}
       </div>
     </div>
   )

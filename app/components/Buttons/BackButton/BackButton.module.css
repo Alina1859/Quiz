@@ -1,0 +1,34 @@
+.backButton {
+  width: 56px;
+  height: 56px;
+  padding: 16px;
+  background-color: var(--color-bg-neutral-low);
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.backButton :global(img) {
+  width: 8px;
+  height: 14px;
+}
+
+.backButton:hover {
+  background-color: var(--color-bg-neutral-med);
+}
+
+.backButton:active {
+  background-color: var(--color-bg-neutral-med);
+}
+
+.backButton:disabled {
+  background-color: var(--color-bg-neutral-low);
+  cursor: not-allowed;
+  opacity: 1;
+  pointer-events: none;
+}
+

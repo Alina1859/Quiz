@@ -1,0 +1,21 @@
+.buttonText {
+  font-family: 'Inter Tight';
+  font-size: 16px;
+  font-weight: 400;
+  font-style: normal;
+  line-height: 24px;
+  letter-spacing: 0%;
+}
+
+@media (max-width: 768px) {
+  .buttonText {
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .buttonText {
+    font-size: 14px;
+  }
+}
+

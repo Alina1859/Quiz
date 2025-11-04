@@ -2,9 +2,9 @@
   position: absolute;
   bottom: 40px;
   left: 40px;
-  width: 550px;
-  height: 366px;
-  background-color: var(--color-bg-default);
+  max-width: 550px;
+  max-height: 366px;
+  background: linear-gradient(225deg, transparent 20px, var(--color-bg-default) 20px);
   padding: 24px;
   box-sizing: border-box;
   border-radius: 12px;
@@ -14,6 +14,8 @@
   overflow-y: auto;
   overflow-x: hidden;
   transition: transform 0.3s ease-out;
+  filter: url(#round);
+
 }
 
 .offerCard.slideLeft {
@@ -40,19 +42,20 @@
 }
 
 .title {
-  font-family: 'Bebas Neue', sans-serif;
+  font-family: 'Bebas Neue';
   color: var(--color-text-default);
-  font-size: 48px;
-  font-weight: 400;
-  line-height: 48px;
+  font-size: 42px;
+  font-weight: 700;
+  line-height: 42px;
   letter-spacing: 0%;
   text-transform: uppercase;
   margin: 0;
   margin-bottom: 12px;
+  font-style: normal;
 }
 
 .subtitle {
-  font-family: 'Inter Tight', sans-serif;
+  font-family: 'Inter Tight';
   color: var(--color-text-default);
   font-size: 16px;
   font-weight: 400;
@@ -63,113 +66,41 @@
   margin-bottom: 32px;
 }
 
-.buttonWrapper {
-  margin-bottom: 12px;
-}
 
 .features {
-  font-family: 'Inter Tight', sans-serif;
-  color: var(--color-text-default);
+  font-family: 'Inter Tight';
+  color: var(--color-text-disabled);
   font-size: 12px;
   font-weight: 400;
   font-style: normal;
   line-height: 16px;
   letter-spacing: 0%;
   margin: 0;
-  opacity: 0.8;
 }
 
+@media (max-width: 1200px)  {
+  .offerCard {
+    bottom: 0px;
+    left: 0px;
+    right: 0px;
+    max-width: 100%;
+    height: auto;
+    max-height: 358px;
+    padding: 20px;
+    border-radius: 12px 12px 0 0;
+  }
+}
+
+/* Мобильная версия: 375x800 */
 @media (max-width: 768px) {
   .offerCard {
-    bottom: 20px;
-    left: 20px;
-    right: 20px;
-    width: auto;
+    bottom: 0px;
+    left: 0px;
+    right: 0px;
+    width: 100%;
     height: auto;
-    min-height: 300px;
-    max-width: calc(100vw - 40px);
-    max-height: calc(100vh - 40px);
+    max-height: 332px;
     padding: 20px;
-    border-radius: 12px;
-  }
-
-  .title {
-    font-size: 32px;
-    line-height: 32px;
-    margin-bottom: 10px;
-  }
-
-  .subtitle {
-    font-size: 14px;
-    line-height: 20px;
-    margin-bottom: 24px;
-  }
-
-  .features {
-    font-size: 11px;
-    line-height: 14px;
+    border-radius: 12px 12px 0 0;
   }
 }
-
-@media (max-width: 480px) {
-  .offerCard {
-    bottom: 16px;
-    left: 16px;
-    right: 16px;
-    width: auto;
-    height: auto;
-    min-height: 280px;
-    max-width: calc(100vw - 32px);
-    max-height: calc(100vh - 32px);
-    padding: 16px;
-    border-radius: 8px;
-  }
-
-  .title {
-    font-size: 24px;
-    line-height: 24px;
-    margin-bottom: 8px;
-  }
-
-  .subtitle {
-    font-size: 14px;
-    line-height: 20px;
-    margin-bottom: 20px;
-  }
-
-  .features {
-    font-size: 10px;
-    line-height: 14px;
-  }
-}
-
-@media (max-height: 600px) {
-  .offerCard {
-    height: auto;
-    min-height: 250px;
-    max-height: calc(100vh - 32px);
-    padding: 16px;
-  }
-
-  .title {
-    font-size: 28px;
-    line-height: 28px;
-    margin-bottom: 8px;
-  }
-
-  .subtitle {
-    font-size: 14px;
-    line-height: 20px;
-    margin-bottom: 16px;
-  }
-
-  .buttonWrapper {
-    margin-bottom: 8px;
-  }
-
-  .features {
-    font-size: 10px;
-    line-height: 14px;
-  }
-}
-

@@ -23,24 +23,35 @@ export default function Home() {
   }
 
   return (
-    <main className={styles.main}>
-      <div className={`${styles.backgroundContainer} ${isQuizOpen ? styles.slideLeft : ''}`}>
-      </div>
-      
-      <div className={styles.logoContainer}>
-        <Image
-          src="/images/Logo.svg"
-          alt="Logo"
-          width={72}
-          height={24}
-          className={styles.logo}
-        />
-      </div>
-      
-      <OfferCard onStartClick={handleStartQuiz} isQuizOpen={isQuizOpen} />
-      
-      <QuizPanel isOpen={isQuizOpen} onClose={handleCloseQuiz} onReset={handleResetQuiz} />
-    </main>
+    <>
+      <svg style={{ visibility: 'hidden', position: 'absolute' }} width="0" height="0" xmlns="http://www.w3.org/2000/svg" version="1.1">
+        <defs>
+          <filter id="round">
+            <feGaussianBlur in="SourceGraphic" stdDeviation="3" result="blur" />    
+            <feColorMatrix in="blur" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 19 -9" result="goo" />
+            <feComposite in="SourceGraphic" in2="goo" operator="atop"/>
+          </filter>
+        </defs>
+      </svg>
+      <main className={styles.main}>
+        <div className={`${styles.backgroundContainer} ${isQuizOpen ? styles.slideLeft : ''}`}>
+        </div>
+        
+        <div className={styles.logoContainer} onClick={handleResetQuiz}>
+          <Image
+            src="/images/Logo.svg"
+            alt="Logo"
+            width={72}
+            height={24}
+            className={styles.logo}
+          />
+        </div>
+        
+        <OfferCard onStartClick={handleStartQuiz} isQuizOpen={isQuizOpen} />
+        
+        <QuizPanel isOpen={isQuizOpen} onClose={handleCloseQuiz} onReset={handleResetQuiz} />
+      </main>
+    </>
   )
 }
 

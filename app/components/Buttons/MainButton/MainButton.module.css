@@ -1,0 +1,38 @@
+.button {
+  background-color: var(--color-bg-accent-default);
+  color: var(--color-text-default-inverse);
+  border: none;
+  padding: 16px;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: background-color 0.2s ease, opacity 0.2s ease;
+  width: 100%;
+  /* max-width: 502px; */
+  max-height: 56px;
+  height: 56px;
+  margin-bottom: 12px;
+}
+
+.button:hover {
+  background-color: var(--color-bg-accent-hover);
+}
+
+.button:active {
+  opacity: 0.8;
+}
+
+.button:disabled {
+  background-color: var(--color-bg-accent-default-light);
+  opacity: 1;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+@media (max-width: 480px) {
+  .button {
+    padding: 16px 24px;
+    padding-top: 16px;
+    padding-bottom: 16px;
+  }
+}
+

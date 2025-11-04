@@ -1,5 +1,5 @@
 import styles from './SuccessScreen.module.css'
-import Button from '../Button/Button'
+import MainButton from '../Buttons/MainButton/MainButton'
 
 interface SuccessScreenProps {
   onReturnHome: () => void
@@ -15,12 +15,13 @@ export default function SuccessScreen({ onReturnHome }: SuccessScreenProps) {
       </p>
 
       <div className={styles.buttonWrapper}>
-        <Button onClick={onReturnHome}>
+        <MainButton onClick={onReturnHome}>
           Вернуться на главную
-        </Button>
+        </MainButton>
       </div>
     </div>
   )
 }
+
 
 

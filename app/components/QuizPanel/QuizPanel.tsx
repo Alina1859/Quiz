@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import styles from './QuizPanel.module.css'
 import TestCard from '../TestCard/TestCard'
-import FinishForm from '../FinishForm/FinishForm'
+import ContactForm from '../ContactForm/ContactForm'
 import SuccessScreen from '../SuccessScreen/SuccessScreen'
 
 interface QuizPanelProps {
@@ -79,6 +79,12 @@ export default function QuizPanel({ isOpen, onClose, onReset }: QuizPanelProps) 
     }
   }
 
+  const handlePrevious = () => {
+    if (currentStep > 1) {
+      setCurrentStep(prev => prev - 1)
+    }
+  }
+
   const handleSubmit = async (data: {
     answers: Record<number, string>
     name: string
@@ -148,7 +154,7 @@ export default function QuizPanel({ isOpen, onClose, onReset }: QuizPanelProps) 
         ) : isSuccess ? (
           <SuccessScreen onReturnHome={handleReturnHome} />
         ) : isFinished ? (
-          <FinishForm answers={answers} onSubmit={handleSubmit} />
+          <ContactForm answers={answers} onSubmit={handleSubmit} />
         ) : currentQuestion ? (
           <TestCard
             step={currentStep}
@@ -158,6 +164,7 @@ export default function QuizPanel({ isOpen, onClose, onReset }: QuizPanelProps) 
             selectedOption={selectedOption}
             onOptionSelect={handleOptionSelect}
             onNext={handleNext}
+            onPrevious={handlePrevious}
           />
         ) : (
           <div className={styles.error}>Вопросы не найдены</div>

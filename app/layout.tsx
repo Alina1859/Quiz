@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
-import "country-select-js/build/css/countrySelect.css";
 import "./colors.css";
 import "./globals.css";
+import "react-phone-input-2/lib/style.css";
 
 export const metadata: Metadata = {
   title: "Quiz API",
