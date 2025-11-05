@@ -13,7 +13,8 @@
   --color-bg-accent-default: #F2BE5F;
   --color-bg-accent-hover: #D9A23F;
   --color-bg-accent-default-light: rgba(242, 190, 95, 0.16);
-  --color-bg-neutral-low: rgba(255, 255, 255, 0.06);
+  --color-bg-neutral-search:#2F2F2F;
+  --color-bg-neutral-low: #222222;
   --color-bg-neutral-med: rgba(255, 255, 255, 0.1);
   --color-bg-transition-background: #52a4c8;
 

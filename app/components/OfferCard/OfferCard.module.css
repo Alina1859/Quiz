@@ -3,19 +3,17 @@
   bottom: 40px;
   left: 40px;
   max-width: 550px;
-  max-height: 366px;
+  max-height: 358px;
   background: linear-gradient(225deg, transparent 20px, var(--color-bg-default) 20px);
   padding: 24px;
   box-sizing: border-box;
   border-radius: 12px;
-  z-index: 10;
   display: flex;
   flex-direction: column;
-  overflow-y: auto;
+  overflow-y: hidden;
   overflow-x: hidden;
   transition: transform 0.3s ease-out;
   filter: url(#round);
-
 }
 
 .offerCard.slideLeft {
@@ -49,7 +47,6 @@
   line-height: 42px;
   letter-spacing: 0%;
   text-transform: uppercase;
-  margin: 0;
   margin-bottom: 12px;
   font-style: normal;
 }
@@ -62,7 +59,6 @@
   font-style: normal;
   line-height: 24px;
   letter-spacing: 0%;
-  margin: 0;
   margin-bottom: 32px;
 }
 
@@ -75,7 +71,7 @@
   font-style: normal;
   line-height: 16px;
   letter-spacing: 0%;
-  margin: 0;
+  max-width: 344px;
 }
 
 @media (max-width: 1200px)  {
@@ -84,10 +80,19 @@
     left: 0px;
     right: 0px;
     max-width: 100%;
-    height: auto;
-    max-height: 358px;
+    max-height: none;
     padding: 20px;
     border-radius: 12px 12px 0 0;
+    filter: none;
+    background: var(--color-bg-default);
+  }
+
+  .title {
+    letter-spacing: 2px;
+  }
+
+  .features {
+    max-width: 440px;
   }
 }
 
@@ -98,9 +103,25 @@
     left: 0px;
     right: 0px;
     width: 100%;
-    height: auto;
-    max-height: 332px;
     padding: 20px;
     border-radius: 12px 12px 0 0;
   }
+
+  .title {
+    font-size: 28px;
+    line-height: 32px;
+    letter-spacing: 0px;
+  }
+  
+  .subtitle {
+    font-size: 14px;
+    line-height: 20px;
+    letter-spacing: 0px;
+  }
+
+  .features {
+    max-width: 100%;
+  }
+
+
 }

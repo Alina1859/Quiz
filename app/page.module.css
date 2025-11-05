@@ -16,7 +16,7 @@
   z-index: 0;
   overflow: hidden;
   transition: transform 0.3s ease-out, height 0.3s ease-out;
-  background: url('/images/Background Photo.png') center / cover no-repeat fixed;
+  background: url('/images/Background_Photo.png') center / cover no-repeat fixed;
 }
 
 .backgroundContainer.slideLeft {
@@ -31,14 +31,9 @@
   .backgroundContainer {
     top: 0;
     background-attachment: scroll;
-    background-size: contain;
-    background-position: center center;
-    background-repeat: no-repeat;
-    height: calc(100vh - 358px);
-    min-height: calc(100vh - 358px);
     width: 100%;
     transition: transform 0.3s ease-out, height 0.3s ease-out;
-    background: url('/images/Background Photo 2.png') center / cover no-repeat fixed;
+    background: url('/images/Background_Photo_mob.png') bottom / cover no-repeat fixed;
 
   }
 }
@@ -58,9 +53,8 @@
     width: 100%;
     transition: transform 0.3s ease-out, height 0.3s ease-out;
   }
+
 }
-
-
 
 .logoContainer {
   position: absolute;

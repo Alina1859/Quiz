@@ -11,6 +11,9 @@
   max-height: 56px;
   height: 56px;
   margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .button:hover {
@@ -26,6 +29,13 @@
   opacity: 1;
   cursor: not-allowed;
   pointer-events: none;
+}
+
+@media (max-width: 768px) {
+  .button {
+    max-height: 44px;
+    height: 44px;
+  }
 }
 
 @media (max-width: 480px) {
