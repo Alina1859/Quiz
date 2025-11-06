@@ -23,39 +23,6 @@
   transform: translateX(calc(-23%));
 }
 
-@media (max-width: 1200px) {
-  .backgroundContainer.slideLeft {
-    transform: none;
-  }
-
-  .backgroundContainer {
-    top: 0;
-    background-attachment: scroll;
-    width: 100%;
-    transition: transform 0.3s ease-out, height 0.3s ease-out;
-    background: url('/images/Background_Photo_mob.png') bottom / cover no-repeat fixed;
-
-  }
-}
-
-@media (max-width: 768px) {
-  .backgroundContainer.slideLeft {
-    transform: none;
-  }
-
-  .backgroundContainer {
-    top: 0;
-    background-attachment: scroll;
-    background-size: cover;
-    background-position: center center;
-    background-repeat: no-repeat;
-    height: 75vh;
-    width: 100%;
-    transition: transform 0.3s ease-out, height 0.3s ease-out;
-  }
-
-}
-
 .logoContainer {
   position: absolute;
   top: 20px;
@@ -71,31 +38,32 @@
   height: 24px;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 1200px) {
   .logoContainer {
-    top: 16px;
     left: 20px;
-    width: 54px;
-    height: 18px;
   }
 
-  .logo {
-    width: 54px;
-    height: 18px;
+  .backgroundContainer.slideLeft {
+    transform: none;
+  }
+
+  .backgroundContainer {
+    top: 0;
+    background-attachment: scroll;
+    width: 100%;
+    transition: transform 0.3s ease-out, height 0.3s ease-out;
+    background: url('/images/Background_Photo_mob.png') bottom / no-repeat fixed;
+  }
+
+  .backgroundContainer.quizOpen {
+    background: url('/images/Background_Photo_Quiz.png') center / no-repeat fixed;
   }
 }
 
-@media (max-width: 480px) {
-  .logoContainer {
-    top: 12px;
-    left: 16px;
-    width: 48px;
-    height: 16px;
-  }
-
-  .logo {
-    width: 48px;
-    height: 16px;
+@media (max-width: 768px) {
+  .backgroundContainer.slideLeft {
+    transform: none;
   }
 }
+
 

@@ -43,7 +43,11 @@ export default function OfferCard({ onStartClick, isQuizOpen, onHeightChange }: 
         Ответьте на несколько вопросов, и мы подберём лучшие варианты от застройщиков с актуальными ценами и рассрочкой 0%
       </p>
       
-      <MainButton onClick={onStartClick} maxHeight={buttonMaxHeight}>
+      <MainButton 
+        onClick={onStartClick} 
+        maxHeight={buttonMaxHeight}
+        style={{ marginBottom: '12px' }}
+      >
         Начать подбор
       </MainButton>
       

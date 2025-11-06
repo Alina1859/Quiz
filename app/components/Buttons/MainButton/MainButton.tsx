@@ -8,6 +8,7 @@ interface MainButtonProps {
   type?: 'button' | 'submit' | 'reset'
   maxHeight?: number | string
   className?: string
+  style?: React.CSSProperties
 }
 
 export default function MainButton({ 
@@ -16,14 +17,18 @@ export default function MainButton({
   disabled = false, 
   type = 'button',
   maxHeight,
-  className
+  className,
+  style
 }: MainButtonProps) {
-  const style = maxHeight ? { maxHeight: typeof maxHeight === 'number' ? `${maxHeight}px` : maxHeight } : undefined
+  const computedStyle: React.CSSProperties = {
+    ...(maxHeight ? { maxHeight: typeof maxHeight === 'number' ? `${maxHeight}px` : maxHeight } : {}),
+    ...style
+  }
 
   return (
     <button 
       className={`${styles.button} ${className || ''}`}
-      style={style}
+      style={Object.keys(computedStyle).length > 0 ? computedStyle : undefined}
       onClick={onClick}
       disabled={disabled}
       type={type}

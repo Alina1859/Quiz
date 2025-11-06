@@ -9,6 +9,7 @@ import QuizPanel from './components/QuizPanel/QuizPanel'
 export default function Home() {
   const [isQuizOpen, setIsQuizOpen] = useState(false)
   const [offerCardHeight, setOfferCardHeight] = useState(0)
+  const [quizPanelHeight, setQuizPanelHeight] = useState(0)
   const [windowWidth, setWindowWidth] = useState(0)
 
   useEffect(() => {
@@ -41,11 +42,17 @@ export default function Home() {
     setOfferCardHeight(height)
   }
 
+  const handleQuizPanelHeightChange = (height: number) => {
+    setQuizPanelHeight(height)
+  }
+
   // Вычисляем высоту backgroundContainer для экранов < 1200px
-  // Учитываем паддинг OfferCard (20px сверху + 20px снизу = 40px)
-  const offerCardPadding = 40 // 20px сверху + 20px снизу
-  const backgroundContainerStyle = windowWidth > 0 && windowWidth < 1200 && offerCardHeight > 0
-    ? { height: `calc(100vh - ${offerCardHeight}px - ${offerCardPadding}px + 12px)` }
+  // Если QuizPanel открыт, используем его высоту, иначе высоту OfferCard
+  const offerCardPadding = 40 // 20px сверху + 20px снизу = 40px
+  const activeHeight = isQuizOpen ? quizPanelHeight : offerCardHeight
+  const activePadding = isQuizOpen ? 0 : offerCardPadding // QuizPanel не требует дополнительного паддинга
+  const backgroundContainerStyle = windowWidth > 0 && windowWidth < 1200 && activeHeight > 0
+    ? { height: `calc(100vh - ${activeHeight}px - ${activePadding}px + 12px)` }
     : undefined
 
   return (
@@ -61,7 +68,7 @@ export default function Home() {
       </svg>
       <main className={styles.main}>
         <div 
-          className={`${styles.backgroundContainer} ${isQuizOpen ? styles.slideLeft : ''}`}
+          className={`${styles.backgroundContainer} ${isQuizOpen ? `${styles.slideLeft} ${styles.quizOpen}` : ''}`}
           style={backgroundContainerStyle}
         >
         </div>
@@ -82,7 +89,12 @@ export default function Home() {
           onHeightChange={handleOfferCardHeightChange}
         />
         
-        <QuizPanel isOpen={isQuizOpen} onClose={handleCloseQuiz} onReset={handleResetQuiz} />
+        <QuizPanel 
+          isOpen={isQuizOpen} 
+          onClose={handleCloseQuiz} 
+          onReset={handleResetQuiz}
+          onHeightChange={handleQuizPanelHeightChange}
+        />
       </main>
     </>
   )

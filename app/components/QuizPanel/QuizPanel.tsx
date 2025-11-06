@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import useResizeObserver from 'use-resize-observer'
 import styles from './QuizPanel.module.css'
 import TestCard from '../TestCard/TestCard'
 import ContactForm from '../ContactForm/ContactForm'
@@ -10,6 +11,7 @@ interface QuizPanelProps {
   isOpen: boolean
   onClose: () => void
   onReset: () => void
+  onHeightChange?: (height: number) => void
 }
 
 interface Question {
@@ -18,7 +20,7 @@ interface Question {
   options: string[]
 }
 
-export default function QuizPanel({ isOpen, onClose, onReset }: QuizPanelProps) {
+export default function QuizPanel({ isOpen, onClose, onReset, onHeightChange }: QuizPanelProps) {
   const [currentStep, setCurrentStep] = useState(1)
   const [questions, setQuestions] = useState<Question[]>([])
   const [loading, setLoading] = useState(true)
@@ -27,6 +29,7 @@ export default function QuizPanel({ isOpen, onClose, onReset }: QuizPanelProps) 
   const [isFinished, setIsFinished] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [isSuccess, setIsSuccess] = useState(false)
+  const { ref, height = 0 } = useResizeObserver<HTMLDivElement>()
 
   useEffect(() => {
     if (isOpen) {
@@ -39,6 +42,12 @@ export default function QuizPanel({ isOpen, onClose, onReset }: QuizPanelProps) 
       setIsSuccess(false)
     }
   }, [isOpen])
+
+  useEffect(() => {
+    if (height > 0 && onHeightChange && isOpen) {
+      onHeightChange(height)
+    }
+  }, [height, onHeightChange, isOpen])
 
   useEffect(() => {
     // Сбрасываем выбранный вариант при переходе на новый вопрос
@@ -147,7 +156,7 @@ export default function QuizPanel({ isOpen, onClose, onReset }: QuizPanelProps) 
   const currentQuestion = questions[currentStep - 1]
 
   return (
-    <div className={styles.quizPanel}>
+    <div ref={ref} className={styles.quizPanel}>
       <div className={styles.panelContent}>
         {loading ? (
           <div className={styles.loading}>Загрузка...</div>

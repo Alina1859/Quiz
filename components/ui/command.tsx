@@ -42,10 +42,10 @@ const CommandInput = React.forwardRef<
   const [isFocused, setIsFocused] = React.useState(false);
 
   return (
-    <div 
+  <div 
       ref={wrapperRef}
       className="flex items-center px-3 h-9 rounded-[6px] mb-3 transition-all" 
-      cmdk-input-wrapper=""
+    cmdk-input-wrapper=""
       style={{ 
         backgroundColor: "var(--color-bg-neutral-low)",
         border: isFocused ? "1px solid var(--color-border-neutral-high)" : "none",
@@ -61,27 +61,27 @@ const CommandInput = React.forwardRef<
           e.currentTarget.style.backgroundColor = "var(--color-bg-neutral-low)";
         }
       }}
+  >
+    <svg 
+      width="16" 
+      height="16" 
+      viewBox="0 0 20 20" 
+      fill="none" 
+      xmlns="http://www.w3.org/2000/svg"
+      className="mr-2 shrink-0"
+      style={{ color: "var(--color-text-secondary)" }}
     >
-      <svg 
-        width="16" 
-        height="16" 
-        viewBox="0 0 20 20" 
-        fill="none" 
-        xmlns="http://www.w3.org/2000/svg"
-        className="mr-2 shrink-0"
-        style={{ color: "var(--color-text-secondary)" }}
-      >
-        <path 
-          d="M16 9C16 5.13401 12.866 2 9 2C5.13401 2 2 5.13401 2 9C2 12.866 5.13401 16 9 16C10.89 16 12.6038 15.2497 13.8633 14.0322C13.8877 14.0012 13.9148 13.9719 13.9434 13.9434C13.9719 13.9148 14.0012 13.8877 14.0322 13.8633C15.2497 12.6038 16 10.89 16 9ZM18 9C18 11.125 17.2619 13.0766 16.0303 14.6162L19.707 18.293C20.0976 18.6835 20.0976 19.3165 19.707 19.707C19.3165 20.0976 18.6835 20.0976 18.293 19.707L14.6162 16.0303C13.0766 17.2619 11.125 18 9 18C4.02944 18 0 13.9706 0 9C0 4.02944 4.02944 0 9 0C13.9706 0 18 4.02944 18 9Z" 
-          fill="currentColor"
-        />
-      </svg>
-      <CommandPrimitive.Input
-        ref={ref}
-        className={cn(
+      <path 
+        d="M16 9C16 5.13401 12.866 2 9 2C5.13401 2 2 5.13401 2 9C2 12.866 5.13401 16 9 16C10.89 16 12.6038 15.2497 13.8633 14.0322C13.8877 14.0012 13.9148 13.9719 13.9434 13.9434C13.9719 13.9148 14.0012 13.8877 14.0322 13.8633C15.2497 12.6038 16 10.89 16 9ZM18 9C18 11.125 17.2619 13.0766 16.0303 14.6162L19.707 18.293C20.0976 18.6835 20.0976 19.3165 19.707 19.707C19.3165 20.0976 18.6835 20.0976 18.293 19.707L14.6162 16.0303C13.0766 17.2619 11.125 18 9 18C4.02944 18 0 13.9706 0 9C0 4.02944 4.02944 0 9 0C13.9706 0 18 4.02944 18 9Z" 
+        fill="currentColor"
+      />
+    </svg>
+    <CommandPrimitive.Input
+      ref={ref}
+      className={cn(
           "flex h-9 w-full rounded-md bg-transparent py-3 pl-2 text-sm outline-none border-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50",
-          className
-        )}
+        className
+      )}
         onFocus={() => {
           setIsFocused(true);
           if (wrapperRef.current) {
@@ -96,9 +96,9 @@ const CommandInput = React.forwardRef<
             wrapperRef.current.style.border = "none";
           }
         }}
-        {...props}
-      />
-    </div>
+      {...props}
+    />
+  </div>
   );
 })
 
