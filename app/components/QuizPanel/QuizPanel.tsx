@@ -6,6 +6,7 @@ import styles from './QuizPanel.module.css'
 import TestCard from '../TestCard/TestCard'
 import ContactForm from '../ContactForm/ContactForm'
 import SuccessScreen from '../SuccessScreen/SuccessScreen'
+import { useFingerprint } from '@/app/hooks/useFingerprint'
 
 interface QuizPanelProps {
   isOpen: boolean
@@ -30,11 +31,11 @@ export default function QuizPanel({ isOpen, onClose, onReset, onHeightChange }: 
   const [submitting, setSubmitting] = useState(false)
   const [isSuccess, setIsSuccess] = useState(false)
   const { ref, height = 0 } = useResizeObserver<HTMLDivElement>()
+  const { fingerprintData } = useFingerprint(isOpen)
 
   useEffect(() => {
     if (isOpen) {
       fetchQuestions()
-      // Сброс состояния при открытии
       setCurrentStep(1)
       setAnswers({})
       setSelectedOption(null)
@@ -50,7 +51,6 @@ export default function QuizPanel({ isOpen, onClose, onReset, onHeightChange }: 
   }, [height, onHeightChange, isOpen])
 
   useEffect(() => {
-    // Сбрасываем выбранный вариант при переходе на новый вопрос
     const currentQuestionId = questions[currentStep - 1]?.id
     setSelectedOption(currentQuestionId ? answers[currentQuestionId] || null : null)
   }, [currentStep, questions, answers])
@@ -72,25 +72,24 @@ export default function QuizPanel({ isOpen, onClose, onReset, onHeightChange }: 
     setSelectedOption(option)
     const currentQuestionId = questions[currentStep - 1]?.id
     if (currentQuestionId) {
-      setAnswers(prev => ({
+      setAnswers((prev) => ({
         ...prev,
-        [currentQuestionId]: option
+        [currentQuestionId]: option,
       }))
     }
   }
 
   const handleNext = () => {
     if (selectedOption && currentStep < questions.length) {
-      setCurrentStep(prev => prev + 1)
+      setCurrentStep((prev) => prev + 1)
     } else if (selectedOption && currentStep === questions.length) {
-      // Переход к финальной форме после последнего вопроса
       setIsFinished(true)
     }
   }
 
   const handlePrevious = () => {
     if (currentStep > 1) {
-      setCurrentStep(prev => prev - 1)
+      setCurrentStep((prev) => prev - 1)
     }
   }
 
@@ -99,18 +98,18 @@ export default function QuizPanel({ isOpen, onClose, onReset, onHeightChange }: 
     name: string
     phone: string
     contactMethod: string
+    recaptchaToken: string
   }) => {
     try {
       setSubmitting(true)
-      
-      // Упорядочиваем ответы по порядку вопросов
+
       const orderedAnswers: Record<number, string> = {}
       questions.forEach((question, index) => {
         if (data.answers[question.id]) {
           orderedAnswers[question.id] = data.answers[question.id]
         }
       })
-      
+
       const response = await fetch('/api/quiz/submit', {
         method: 'POST',
         headers: {
@@ -121,6 +120,8 @@ export default function QuizPanel({ isOpen, onClose, onReset, onHeightChange }: 
           name: data.name,
           phone: data.phone,
           contactMethod: data.contactMethod,
+          recaptchaToken: data.recaptchaToken,
+          fingerprintData: fingerprintData,
         }),
       })
 
@@ -139,13 +140,11 @@ export default function QuizPanel({ isOpen, onClose, onReset, onHeightChange }: 
   }
 
   const handleReturnHome = () => {
-    // Сброс всего состояния
     setCurrentStep(1)
     setAnswers({})
     setSelectedOption(null)
     setIsFinished(false)
     setIsSuccess(false)
-    // Закрываем панель и сбрасываем состояние на главной
     onReset()
     onClose()
   }
@@ -182,4 +181,3 @@ export default function QuizPanel({ isOpen, onClose, onReset, onHeightChange }: 
     </div>
   )
 }
-

@@ -12,12 +12,11 @@
   margin-bottom: 8px;
   display: flex;
   align-items: center;
-
 }
 
 .optionButton:hover {
   background-color: var(--color-bg-neutral-low);
-  border-color: rgba(255, 255, 255, 0.3);
+  border-color: var(--color-border-neutral-high);
 }
 
 .optionButton.selected {
@@ -26,11 +25,8 @@
   color: var(--color-text-accent);
 }
 
-@media (max-width: 768px) {
+@media (max-width: 600px) {
   .optionButton {
     height: 40px;
   }
 }
-
-
-

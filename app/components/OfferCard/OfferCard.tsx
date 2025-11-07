@@ -30,31 +30,31 @@ export default function OfferCard({ onStartClick, isQuizOpen, onHeightChange }: 
     }
   }, [height, onHeightChange])
 
-  // Определяем maxHeight для кнопки на разрешении 768px
-  const buttonMaxHeight = windowWidth > 0 && windowWidth <= 768 ? 44 : undefined
+  const buttonMaxHeight = windowWidth > 0 && windowWidth <= 600 ? 44 : undefined
 
   return (
     <div ref={ref} className={`${styles.offerCard} ${isQuizOpen ? styles.slideLeft : ''}`}>
       <h1 className={styles.title}>
         Подберите элитную недвижимость в Дубае под ваши цели и бюджет — за 1 минуту
       </h1>
-      
+
       <p className={styles.subtitle}>
-        Ответьте на несколько вопросов, и мы подберём лучшие варианты от застройщиков с актуальными ценами и рассрочкой 0%
+        Ответьте на несколько вопросов, и мы подберём лучшие варианты от застройщиков с актуальными
+        ценами и рассрочкой 0%
       </p>
-      
-      <MainButton 
-        onClick={onStartClick} 
+
+      <MainButton
+        onClick={onStartClick}
         maxHeight={buttonMaxHeight}
         style={{ marginBottom: '12px' }}
       >
         Начать подбор
       </MainButton>
-      
+
       <p className={styles.features}>
-        Без комиссии • Только проверенные застройщики • Юридическое сопровождение сделки • Сертификат DLD
+        Без комиссии • Только проверенные застройщики • Юридическое сопровождение сделки •
+        Сертификат DLD
       </p>
     </div>
   )
 }
-

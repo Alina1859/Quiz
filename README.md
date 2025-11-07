@@ -8,6 +8,8 @@ export {}
 
 ```
 DATABASE_URL="file:./dev.db"
+NEXT_PUBLIC_RECAPTCHA_SITE_KEY="your_recaptcha_site_key"
+RECAPTCHA_SECRET_KEY="your_recaptcha_secret_key"
 ```
 
 2. Install deps:
@@ -31,11 +33,13 @@ npm run dev
 ```
 
 ## API
+
 - POST `/api/quiz/start`: creates 10-min session cookie
 - GET `/api/quiz/questions`: requires active session
 - POST `/api/quiz/submit`: body `{ answers: Record<string,string>, phone: string(10) }`, ends session
 
 ## Notes
+
 - Sessions are stored in SQLite with `expiresAt` and `isActive`
 - Cookies are httpOnly, sameSite=lax, secure
 - Phone validation: 10 digits

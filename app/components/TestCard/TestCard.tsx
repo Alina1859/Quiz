@@ -14,15 +14,15 @@ interface TestCardProps {
   onPrevious?: () => void
 }
 
-export default function TestCard({ 
-  step, 
-  totalSteps, 
-  question, 
+export default function TestCard({
+  step,
+  totalSteps,
+  question,
   options,
   selectedOption,
   onOptionSelect,
   onNext,
-  onPrevious
+  onPrevious,
 }: TestCardProps) {
   return (
     <div className={styles.testCard}>
@@ -30,9 +30,9 @@ export default function TestCard({
         <div className={styles.stepIndicator}>
           Шаг {step} из {totalSteps}
         </div>
-        
+
         <h2 className={styles.question}>{question}</h2>
-        
+
         <div className={styles.options}>
           {options.map((option, index) => (
             <OptionButton
@@ -63,4 +63,3 @@ export default function TestCard({
     </div>
   )
 }
-

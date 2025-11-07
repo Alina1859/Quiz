@@ -52,7 +52,7 @@
 }
 
 .subtitle {
-  font-family: 'Inter Tight';
+  font-family: 'Inter Tight Regular';
   color: var(--color-text-default);
   font-size: 16px;
   font-weight: 400;
@@ -62,9 +62,8 @@
   margin-bottom: 32px;
 }
 
-
 .features {
-  font-family: 'Inter Tight';
+  font-family: 'Inter Tight Regular';
   color: var(--color-text-disabled);
   font-size: 12px;
   font-weight: 400;
@@ -74,7 +73,7 @@
   max-width: 344px;
 }
 
-@media (max-width: 1200px)  {
+@media (max-width: 1200px) {
   .offerCard {
     bottom: 0px;
     left: 0px;
@@ -96,8 +95,7 @@
   }
 }
 
-/* Мобильная версия: 375x800 */
-@media (max-width: 768px) {
+@media (max-width: 600px) {
   .offerCard {
     bottom: 0px;
     left: 0px;
@@ -112,7 +110,7 @@
     line-height: 32px;
     letter-spacing: 0px;
   }
-  
+
   .subtitle {
     font-size: 14px;
     line-height: 20px;

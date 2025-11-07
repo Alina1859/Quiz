@@ -9,7 +9,7 @@
 }
 
 .subtitle {
-  font-family: 'Inter Tight';
+  font-family: 'Inter Tight Regular';
   font-size: 16px;
   font-weight: 400;
   line-height: 24px;
@@ -23,31 +23,17 @@
   flex-direction: column;
   gap: 24px;
   position: relative;
+  flex: 1;
 }
 
-/* .inputGroup {
+.contactForm {
+  height: 100%;
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  position: relative;
 }
-
-.inputGroup :global(button[type="button"]) {
-  cursor: pointer;
-  pointer-events: auto !important;
-}
-
-.inputGroup :global(input::placeholder) {
-  font-family: 'Inter Tight', sans-serif;
-  font-weight: 400;
-  font-size: 16px;
-  line-height: 24px;
-  letter-spacing: 0%;
-  color: var(--color-text-disabled);
-} */
 
 .label {
-  font-family: 'Inter Tight';
+  font-family: 'Inter Tight Regular';
   font-size: 14px;
   font-weight: 400;
   line-height: 20px;
@@ -55,7 +41,7 @@
 }
 
 .input {
-  font-family: 'Inter Tight';
+  font-family: 'Inter Tight Regular';
   font-size: 16px;
   font-weight: 400;
   line-height: 24px;
@@ -67,11 +53,12 @@
   height: 56px;
   width: 100%;
   transition: all 0.2s ease;
+  cursor: pointer;
 }
 
 .input:hover {
   background-color: var(--color-bg-neutral-med);
-  border: none;
+  border-color: var(--color-border-neutral-high);
 }
 
 .input:focus {
@@ -80,8 +67,27 @@
   border: 1px solid var(--color-border-neutral-high);
 }
 
+.input.error {
+  border: 1px solid var(--color-border-critical-default);
+}
+
+.input.error:focus {
+  border: 1px solid var(--color-border-critical-default);
+}
+
+.errorMessage {
+  margin-top: 4px;
+  font-family: 'Inter Tight Regular';
+  font-weight: 400;
+  font-style: normal;
+  font-size: 14px;
+  line-height: 20px;
+  letter-spacing: 0%;
+  color: var(--color-text-critical);
+}
+
 .input::placeholder {
-  font-family: 'Inter Tight', sans-serif;
+  font-family: 'Inter Tight Regular';
   font-weight: 400;
   font-size: 16px;
   line-height: 24px;
@@ -92,23 +98,23 @@
 .contactMethods {
   display: flex;
   flex-direction: row;
-  gap: 12px;
+  flex-wrap: wrap;
 }
 
 .submitButton {
-  margin-top: 8px;
+  margin-top: auto;
   display: flex;
   flex-direction: column;
 }
 
 .consentText {
-  font-family: 'Inter Tight', sans-serif;
+  font-family: 'Inter Tight Regular';
   font-weight: 400;
   font-style: normal;
   font-size: 12px;
   line-height: 16px;
   letter-spacing: 0%;
-  color: var(--color-text-default);
+  color: var(--color-text-secondary);
   margin: 0;
   margin-top: 8px;
 }
@@ -123,19 +129,9 @@
   opacity: 0.8;
 }
 
-@media (max-width: 1200px) {
-  .contactForm {
-    padding: 40px 20px;
-  }
-}
-
-@media (max-width: 768px) {
-  .contactForm {
-    padding: 40px 20px;
-  }
-
+@media (max-width: 375px) {
   .title {
-    font-size: 32px;
+    font-size: 28px;
     line-height: 32px;
   }
 
@@ -144,4 +140,3 @@
     line-height: 20px;
   }
 }
-

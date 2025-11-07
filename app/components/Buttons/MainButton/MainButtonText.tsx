@@ -7,4 +7,3 @@ interface MainButtonTextProps {
 export default function MainButtonText({ children }: MainButtonTextProps) {
   return <span className={styles.buttonText}>{children}</span>
 }
-

@@ -12,7 +12,7 @@
 }
 
 .stepIndicator {
-  font-family: 'Inter Tight';
+  font-family: 'Inter Tight Regular';
   font-size: 14px;
   font-weight: 400;
   line-height: 20px;
@@ -34,38 +34,31 @@
   letter-spacing: 0%;
   text-transform: uppercase;
   color: var(--color-text-default);
-  margin-bottom: 32px;
+  margin-bottom: 72px;
+}
+
+.options {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  margin-bottom: 100px;
 }
 
 @media (max-width: 1200px) {
-
   .stepIndicator {
     font-size: 16px;
     line-height: 24px;
   }
-
-  .options {
-    display: flex;
-    flex-direction: row;
-    flex-wrap: wrap;
-    
-  }
 }
 
-@media (max-width: 768px) {
-
+@media (max-width: 600px) {
   .stepIndicator {
     font-size: 14px;
     line-height: 20px;
-  }  
+  }
 
   .question {
     font-size: 28px;
     line-height: 32px;
-   
   }
-
-
-
 }
-

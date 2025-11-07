@@ -7,4 +7,3 @@ interface OptionButtonTextProps {
 export default function OptionButtonText({ children }: OptionButtonTextProps) {
   return <span className={styles.buttonText}>{children}</span>
 }
-

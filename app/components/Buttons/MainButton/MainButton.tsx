@@ -11,22 +11,24 @@ interface MainButtonProps {
   style?: React.CSSProperties
 }
 
-export default function MainButton({ 
-  children, 
-  onClick, 
-  disabled = false, 
+export default function MainButton({
+  children,
+  onClick,
+  disabled = false,
   type = 'button',
   maxHeight,
   className,
-  style
+  style,
 }: MainButtonProps) {
   const computedStyle: React.CSSProperties = {
-    ...(maxHeight ? { maxHeight: typeof maxHeight === 'number' ? `${maxHeight}px` : maxHeight } : {}),
-    ...style
+    ...(maxHeight
+      ? { maxHeight: typeof maxHeight === 'number' ? `${maxHeight}px` : maxHeight }
+      : {}),
+    ...style,
   }
 
   return (
-    <button 
+    <button
       className={`${styles.button} ${className || ''}`}
       style={Object.keys(computedStyle).length > 0 ? computedStyle : undefined}
       onClick={onClick}
@@ -37,4 +39,3 @@ export default function MainButton({
     </button>
   )
 }
-

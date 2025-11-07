@@ -9,7 +9,8 @@ interface OptionButtonProps {
 
 export default function OptionButton({ children, onClick, selected = false }: OptionButtonProps) {
   return (
-    <button 
+    <button
+      type="button"
       className={`${styles.optionButton} ${selected ? styles.selected : ''}`}
       onClick={onClick}
     >
@@ -17,4 +18,3 @@ export default function OptionButton({ children, onClick, selected = false }: Op
     </button>
   )
 }
-
