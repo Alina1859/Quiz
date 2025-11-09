@@ -31,7 +31,7 @@ async function verifyRecaptcha(
     })
 
     const data = await response.json()
-console.log(data)
+    console.log(data)
     if (data.success === true) {
       if (data.score !== undefined) {
         const isValidScore = data.score >= 0.5
@@ -107,7 +107,7 @@ export async function POST(req: NextRequest) {
       },
     })
 
-    await (prisma.quizResult as any).create({
+    await prisma.quizResult.create({
       data: {
         sessionId: session.id,
         phone,

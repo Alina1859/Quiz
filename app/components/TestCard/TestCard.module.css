@@ -13,9 +13,9 @@
 
 .stepIndicator {
   font-family: 'Inter Tight Regular';
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 400;
-  line-height: 20px;
+  line-height: 24px;
   color: var(--color-text-disabled);
   margin-bottom: 16px;
 }
@@ -46,8 +46,8 @@
 
 @media (max-width: 1200px) {
   .stepIndicator {
-    font-size: 16px;
-    line-height: 24px;
+    font-size: 14px;
+    line-height: 20px;
   }
 }
 

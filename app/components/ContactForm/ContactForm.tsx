@@ -6,7 +6,6 @@ import MainButton from '../Buttons/MainButton/MainButton'
 import OptionButton from '../Buttons/OptionButton/OptionButton'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
-import { isValidPhoneNumber } from 'react-phone-number-input'
 import { z } from 'zod'
 import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form'
 import { PhoneInput } from '@/components/ui/phone-input'
@@ -34,7 +33,7 @@ interface ContactFormProps {
 
 const FormSchema = z.object({
   name: z.string().min(1, { message: 'Введите ваше имя' }),
-  phone: z.string().refine(isValidPhoneNumber, { message: 'Неверный номер телефона' }),
+  phone: z.string().min(1, { message: 'Введите номер телефона' }),
   contactMethod: z.string().min(1, { message: 'Выберите способ связи' }),
 })
 
@@ -42,7 +41,8 @@ export default function ContactForm({ answers, onSubmit: onSubmitProp }: Contact
   const [isLoading, setIsLoading] = useState(false)
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
-    mode: 'onSubmit',
+    mode: 'onChange',
+    reValidateMode: 'onChange',
     defaultValues: {
       name: '',
       phone: '',
@@ -145,19 +145,31 @@ export default function ContactForm({ answers, onSubmit: onSubmitProp }: Contact
 
           <div className={styles.contactMethods}>
             <OptionButton
-              onClick={() => form.setValue('contactMethod', 'call')}
+              onClick={() =>
+                form.setValue('contactMethod', 'call', { shouldDirty: true, shouldValidate: true })
+              }
               selected={contactMethod === 'call'}
             >
               Позвонить
             </OptionButton>
             <OptionButton
-              onClick={() => form.setValue('contactMethod', 'whatsapp')}
+              onClick={() =>
+                form.setValue('contactMethod', 'whatsapp', {
+                  shouldDirty: true,
+                  shouldValidate: true,
+                })
+              }
               selected={contactMethod === 'whatsapp'}
             >
               Написать в WhatsApp
             </OptionButton>
             <OptionButton
-              onClick={() => form.setValue('contactMethod', 'telegram')}
+              onClick={() =>
+                form.setValue('contactMethod', 'telegram', {
+                  shouldDirty: true,
+                  shouldValidate: true,
+                })
+              }
               selected={contactMethod === 'telegram'}
             >
               Написать в Telegram
@@ -178,7 +190,7 @@ export default function ContactForm({ answers, onSubmit: onSubmitProp }: Contact
               {isLoading ? (
                 <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
                   <Spinner />
-                  Loading...
+                  Отправляем...
                 </span>
               ) : (
                 'Получить подборку'

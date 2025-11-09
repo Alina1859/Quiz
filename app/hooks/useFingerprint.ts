@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react'
 
 interface FingerprintData {
   visitorId: string
-  components: any
   userAgent: string
   language: string
   platform: string
@@ -72,7 +71,6 @@ export function useFingerprint(enabled: boolean = true) {
 
         const rawData: FingerprintData = {
           visitorId: result.visitorId,
-          components: result.components,
           userAgent: navigator.userAgent,
           language: navigator.language,
           platform: navigator.platform,
@@ -81,9 +79,7 @@ export function useFingerprint(enabled: boolean = true) {
           timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
           gpuVendor: gl
             ? gl.getExtension('WEBGL_debug_renderer_info')
-              ? gl.getParameter(
-                  gl.getExtension('WEBGL_debug_renderer_info')!.UNMASKED_VENDOR_WEBGL
-                )
+              ? gl.getParameter(gl.getExtension('WEBGL_debug_renderer_info')!.UNMASKED_VENDOR_WEBGL)
               : gl.getParameter(gl.VENDOR)
             : null,
           gpuRenderer: gl
@@ -117,4 +113,3 @@ export function useFingerprint(enabled: boolean = true) {
 
   return { fingerprintData, isLoading, error }
 }
-
