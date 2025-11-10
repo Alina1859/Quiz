@@ -3,6 +3,7 @@
   min-height: 100vh;
   overflow-y: auto;
   overflow-x: hidden;
+  padding: 50px;
 }
 
 .admin-page-container .container {

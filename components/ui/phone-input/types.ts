@@ -9,4 +9,3 @@ export type PhoneInputProps = Omit<ComponentProps<'input'>, 'onChange' | 'value'
 }
 
 export type CountryOption = { label: string; value: RPNInput.Country }
-

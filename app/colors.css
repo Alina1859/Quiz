@@ -24,4 +24,7 @@
   --color-bg-admin-default: #ffffff;
   --color-bg-admin-card: #f5f5f5;
   --color-scrollbar-admin: rgba(255, 255, 255, 0.64);
+  --color-bg-admin-delete: #f04438;
+  --color-bg-admin-edit: #7f7f7f;
+  --color-bg-admin-add: #7f7f7f;
 }

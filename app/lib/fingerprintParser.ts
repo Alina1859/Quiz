@@ -8,10 +8,7 @@ interface FingerprintData {
   timestamp?: string
 }
 
-export function getFingerprintFieldValue(
-  fingerprint: FingerprintData,
-  fieldName: string
-): any {
+export function getFingerprintFieldValue(fingerprint: FingerprintData, fieldName: string): any {
   if (fingerprint[fieldName] !== undefined) {
     return fingerprint[fieldName]
   }
@@ -20,24 +17,14 @@ export function getFingerprintFieldValue(
 
   switch (fieldName) {
     case 'gpuRenderer':
-      return (
-        components.gpu?.value?.renderer ||
-        components.gpuRenderer?.value ||
-        null
-      )
+      return components.gpu?.value?.renderer || components.gpuRenderer?.value || null
     case 'gpuVendor':
-      return (
-        components.gpu?.value?.vendor ||
-        components.gpuVendor?.value ||
-        null
-      )
+      return components.gpu?.value?.vendor || components.gpuVendor?.value || null
     case 'hardwareConcurrency':
       return components.hardwareConcurrency?.value || null
     case 'language':
       const langs = components.languages?.value
-      return Array.isArray(langs)
-        ? langs.join(', ')
-        : langs || components.language?.value || null
+      return Array.isArray(langs) ? langs.join(', ') : langs || components.language?.value || null
     case 'platform':
       return components.platform?.value || null
     case 'screen':
@@ -78,4 +65,3 @@ export function formatFingerprintTimestamp(timestamp: string | null | undefined)
     return String(timestamp)
   }
 }
-

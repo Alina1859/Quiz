@@ -38,7 +38,9 @@ export const CountrySelectButton = ({
       )}
       disabled={disabled}
       style={{
-        border: hasError ? '1px solid var(--color-border-critical-default)' : '1px solid transparent',
+        border: hasError
+          ? '1px solid var(--color-border-critical-default)'
+          : '1px solid transparent',
         borderRadius: '8px',
         paddingLeft: '16px',
         paddingRight: '16px',
