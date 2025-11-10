@@ -7,25 +7,45 @@ interface UpdateQuestionPayload {
   options?: string[]
 }
 
+const validateAdmin = (req: NextRequest) => {
+  const adminToken = req.cookies.get('adminToken')?.value
+  const validToken = process.env.ADMIN_TOKEN
+
+  if (!validToken) {
+    return { error: NextResponse.json({ error: 'Admin token not configured' }, { status: 500 }) }
+  }
+
+  if (adminToken !== validToken) {
+    return { error: NextResponse.json({ error: 'Unauthorized' }, { status: 401 }) }
+  }
+
+  return { ok: true as const }
+}
+
+const parseQuestionId = (params: { id: number }) => {
+  const { id } = params
+  const questionId = Number.parseInt(String(id), 10)
+
+  if (Number.isNaN(questionId)) {
+    return { error: NextResponse.json({ error: 'Invalid question id' }, { status: 400 }) }
+  }
+
+  return { questionId }
+}
+
 export async function PUT(req: NextRequest, context: { params: { id: number } }) {
   try {
-    const adminToken = req.cookies.get('adminToken')?.value
-    const validToken = process.env.ADMIN_TOKEN
-
-    if (!validToken) {
-      return NextResponse.json({ error: 'Admin token not configured' }, { status: 500 })
+    const adminCheck = validateAdmin(req)
+    if ('error' in adminCheck) {
+      return adminCheck.error
     }
 
-    if (adminToken !== validToken) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    const parsed = parseQuestionId(await context.params)
+    if ('error' in parsed) {
+      return parsed.error
     }
 
-    const { id } = await context.params
-    const questionId = Number.parseInt(id, 10)
-
-    if (Number.isNaN(questionId)) {
-      return NextResponse.json({ error: 'Invalid question id' }, { status: 400 })
-    }
+    const { questionId } = parsed
 
     const payload = (await req.json()) as UpdateQuestionPayload
     const { text, options } = payload
@@ -77,5 +97,38 @@ export async function PUT(req: NextRequest, context: { params: { id: number } })
   } catch (error) {
     console.error('Error updating question:', error)
     return NextResponse.json({ error: 'Ошибка при обновлении вопроса' }, { status: 500 })
+  }
+}
+
+export async function DELETE(req: NextRequest, context: { params: { id: number } }) {
+  try {
+    const adminCheck = validateAdmin(req)
+    if ('error' in adminCheck) {
+      return adminCheck.error
+    }
+
+    const parsed = parseQuestionId(await context.params)
+    if ('error' in parsed) {
+      return parsed.error
+    }
+
+    const { questionId } = parsed
+
+    const existingQuestion = await prisma.question.findUnique({
+      where: { id: questionId },
+    })
+
+    if (!existingQuestion) {
+      return NextResponse.json({ error: 'Вопрос не найден' }, { status: 404 })
+    }
+
+    await prisma.question.delete({
+      where: { id: questionId },
+    })
+
+    return NextResponse.json({ success: true })
+  } catch (error) {
+    console.error('Error deleting question:', error)
+    return NextResponse.json({ error: 'Ошибка при удалении вопроса' }, { status: 500 })
   }
 }

@@ -17,6 +17,11 @@ export function CardEditQuiz() {
   const [savingQuestionIds, setSavingQuestionIds] = useState<Record<number, boolean>>({})
   const [optionDrafts, setOptionDrafts] = useState<OptionDrafts>({})
   const [newOptionDrafts, setNewOptionDrafts] = useState<NewOptionDrafts>({})
+  const [newQuestionText, setNewQuestionText] = useState('')
+  const [newQuestionOptions, setNewQuestionOptions] = useState<string[]>([''])
+  const [newQuestionPosition, setNewQuestionPosition] = useState<'start' | 'end' | number>('end')
+  const [isCreatingQuestion, setIsCreatingQuestion] = useState(false)
+  const [deletingQuestionIds, setDeletingQuestionIds] = useState<Record<number, boolean>>({})
 
   useEffect(() => {
     fetchQuestions()
@@ -47,6 +52,42 @@ export function CardEditQuiz() {
       setError(err instanceof Error ? err.message : 'Произошла ошибка при загрузке вопросов')
     } finally {
       setIsLoading(false)
+    }
+  }
+
+  const createQuestion = async (payload: { text: string; options: string[] }) => {
+    try {
+      setError(null)
+
+      const response = await fetch('/api/questions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      })
+
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({}))
+        throw new Error(data.error || 'Не удалось создать вопрос')
+      }
+
+      const result = await response.json()
+      const createdQuestion = result?.question
+
+      if (!createdQuestion) {
+        throw new Error('Сервер не вернул созданный вопрос')
+      }
+
+      return {
+        id: createdQuestion.id,
+        text: createdQuestion.text,
+        options: Array.isArray(createdQuestion.options) ? createdQuestion.options : [],
+      } as Question
+    } catch (err) {
+      console.error(err)
+      setError(err instanceof Error ? err.message : 'Произошла ошибка при создании вопроса')
+      throw err
     }
   }
 
@@ -221,6 +262,159 @@ export function CardEditQuiz() {
     }
   }
 
+  const handleNewQuestionOptionChange = (index: number, value: string) => {
+    setNewQuestionOptions((prev) => {
+      const next = [...prev]
+      next[index] = value
+      return next
+    })
+  }
+
+  const handleAddNewQuestionOption = () => {
+    setNewQuestionOptions((prev) => [...prev, ''])
+  }
+
+  const handleRemoveNewQuestionOption = (index: number) => {
+    setNewQuestionOptions((prev) => {
+      if (prev.length <= 1) {
+        return prev
+      }
+
+      return prev.filter((_, optionIndex) => optionIndex !== index)
+    })
+  }
+
+  const handleNewQuestionPositionChange = (value: string) => {
+    if (value === 'start' || value === 'end') {
+      setNewQuestionPosition(value)
+      return
+    }
+
+    const parsed = Number.parseInt(value, 10)
+    setNewQuestionPosition(Number.isNaN(parsed) ? 'end' : parsed)
+  }
+
+  const resetNewQuestionForm = () => {
+    setNewQuestionText('')
+    setNewQuestionOptions([''])
+    setNewQuestionPosition('end')
+  }
+
+  const handleCreateNewQuestion = async () => {
+    const trimmedText = newQuestionText.trim()
+    const sanitizedOptions = newQuestionOptions
+      .map((option) => option.trim())
+      .filter((option) => option.length > 0)
+
+    if (!trimmedText) {
+      setError('Текст нового вопроса не может быть пустым')
+      return
+    }
+
+    if (sanitizedOptions.length === 0) {
+      setError('Добавьте хотя бы один ответ для нового вопроса')
+      return
+    }
+
+    setIsCreatingQuestion(true)
+    setError(null)
+
+    try {
+      const createdQuestion = await createQuestion({
+        text: trimmedText,
+        options: sanitizedOptions,
+      })
+
+      setData((prev) => {
+        if (prev.length === 0) {
+          return [createdQuestion]
+        }
+
+        if (newQuestionPosition === 'start') {
+          return [createdQuestion, ...prev]
+        }
+
+        if (newQuestionPosition === 'end') {
+          return [...prev, createdQuestion]
+        }
+
+        const insertIndex = prev.findIndex((question) => question.id === newQuestionPosition)
+
+        if (insertIndex === -1) {
+          return [...prev, createdQuestion]
+        }
+
+        return [...prev.slice(0, insertIndex + 1), createdQuestion, ...prev.slice(insertIndex + 1)]
+      })
+
+      resetNewQuestionForm()
+    } catch {
+      // Ошибка уже обработана в createQuestion
+    } finally {
+      setIsCreatingQuestion(false)
+    }
+  }
+
+  const cleanupQuestionDrafts = (questionId: number) => {
+    setQuestionDrafts((prev) => {
+      const { [questionId]: _discarded, ...rest } = prev
+      return rest
+    })
+
+    setNewOptionDrafts((prev) => {
+      const { [questionId]: _discarded, ...rest } = prev
+      return rest
+    })
+
+    setOptionDrafts((prev) => {
+      const entries = Object.entries(prev).filter(([key]) => !key.startsWith(`${questionId}-`))
+      return Object.fromEntries(entries)
+    })
+  }
+
+  const handleDeleteQuestion = async (questionId: number) => {
+    if (!window.confirm('Удалить этот вопрос? Действие нельзя отменить.')) {
+      return
+    }
+
+    setDeletingQuestionIds((prev) => ({ ...prev, [questionId]: true }))
+    setError(null)
+
+    try {
+      const response = await fetch(`/api/questions/${questionId}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({}))
+        throw new Error(data.error || 'Не удалось удалить вопрос')
+      }
+
+      setData((prev) => prev.filter((question) => question.id !== questionId))
+      cleanupQuestionDrafts(questionId)
+
+      setSavingQuestionIds((prev) => {
+        const { [questionId]: _discarded, ...rest } = prev
+        return rest
+      })
+
+      if (newQuestionPosition === questionId) {
+        setNewQuestionPosition('end')
+      }
+    } catch (err) {
+      console.error(err)
+      setError(err instanceof Error ? err.message : 'Произошла ошибка при удалении вопроса')
+    } finally {
+      setDeletingQuestionIds((prev) => {
+        const { [questionId]: _discarded, ...rest } = prev
+        return rest
+      })
+    }
+  }
+
   return (
     <div className="space-y-4">
       <Card className={styles.card}>
@@ -242,6 +436,8 @@ export function CardEditQuiz() {
                     const draftText = questionDrafts[question.id]
                     const isEditingQuestion = draftText !== undefined
                     const isSavingQuestion = Boolean(savingQuestionIds[question.id])
+                    const isDeletingQuestion = Boolean(deletingQuestionIds[question.id])
+                    const isQuestionBusy = isSavingQuestion || isDeletingQuestion
 
                     return (
                       <Card
@@ -263,19 +459,19 @@ export function CardEditQuiz() {
                                     handleQuestionDraftChange(question.id, event.target.value)
                                   }
                                   onKeyDown={(event) => {
-                                    if (event.key === 'Enter' && !isSavingQuestion) {
+                                    if (event.key === 'Enter' && !isQuestionBusy) {
                                       event.preventDefault()
                                       handleSaveQuestion(question)
                                     }
                                   }}
-                                  disabled={isSavingQuestion}
+                                  disabled={isQuestionBusy}
                                 />
                                 <div className="flex flex-wrap gap-2">
                                   <button
                                     type="button"
                                     className={styles.buttonClassName}
                                     onClick={() => handleSaveQuestion(question)}
-                                    disabled={isSavingQuestion}
+                                    disabled={isQuestionBusy}
                                   >
                                     Сохранить
                                   </button>
@@ -283,7 +479,7 @@ export function CardEditQuiz() {
                                     type="button"
                                     className={cn(styles.buttonClassName, styles.cancelButton)}
                                     onClick={() => handleCancelEditQuestion(question.id)}
-                                    disabled={isSavingQuestion}
+                                    disabled={isQuestionBusy}
                                   >
                                     Отмена
                                   </button>
@@ -300,9 +496,18 @@ export function CardEditQuiz() {
                                   onClick={() => {
                                     handleStartEditQuestion(question)
                                   }}
-                                  disabled={isSavingQuestion}
+                                  disabled={isQuestionBusy}
                                 >
                                   Редактировать
+                                </button>
+                                <button
+                                  type="button"
+                                  className={cn(styles.buttonClassName, styles.deleteButton)}
+                                  onClick={() => handleDeleteQuestion(question.id)}
+                                  disabled={isQuestionBusy}
+                                  title="Удалить вопрос"
+                                >
+                                  Удалить
                                 </button>
                               </div>
                             )}
@@ -334,12 +539,12 @@ export function CardEditQuiz() {
                                             }))
                                           }
                                           onKeyDown={(event) => {
-                                            if (event.key === 'Enter' && !isSavingQuestion) {
+                                            if (event.key === 'Enter' && !isQuestionBusy) {
                                               event.preventDefault()
                                               handleSaveOption(question.id, optionIndex)
                                             }
                                           }}
-                                          disabled={isSavingQuestion}
+                                          disabled={isQuestionBusy}
                                         />
                                         <div className="flex gap-2">
                                           <button
@@ -348,7 +553,7 @@ export function CardEditQuiz() {
                                             onClick={() =>
                                               handleSaveOption(question.id, optionIndex)
                                             }
-                                            disabled={isSavingQuestion}
+                                            disabled={isQuestionBusy}
                                             title="Сохранить ответ"
                                           >
                                             Сохранить
@@ -362,7 +567,7 @@ export function CardEditQuiz() {
                                             onClick={() =>
                                               handleCancelEditOption(question.id, optionIndex)
                                             }
-                                            disabled={isSavingQuestion}
+                                            disabled={isQuestionBusy}
                                             title="Отмена"
                                           >
                                             Отмена
@@ -380,7 +585,7 @@ export function CardEditQuiz() {
                                           onClick={() =>
                                             handleStartEditOption(question.id, optionIndex, option)
                                           }
-                                          disabled={isSavingQuestion}
+                                          disabled={isQuestionBusy}
                                           title="Редактировать ответ"
                                         >
                                           Изменить
@@ -394,7 +599,7 @@ export function CardEditQuiz() {
                                           onClick={() =>
                                             handleDeleteOption(question.id, optionIndex)
                                           }
-                                          disabled={isSavingQuestion}
+                                          disabled={isQuestionBusy}
                                           title="Удалить ответ"
                                         >
                                           Удалить
@@ -414,18 +619,18 @@ export function CardEditQuiz() {
                                   handleNewOptionChange(question.id, event.target.value)
                                 }
                                 onKeyDown={(event) => {
-                                  if (event.key === 'Enter' && !isSavingQuestion) {
+                                  if (event.key === 'Enter' && !isQuestionBusy) {
                                     event.preventDefault()
                                     handleAddOption(question.id)
                                   }
                                 }}
-                                disabled={isSavingQuestion}
+                                disabled={isQuestionBusy}
                               />
                               <button
                                 type="button"
                                 className={cn(styles.buttonClassName, styles.addButton)}
                                 onClick={() => handleAddOption(question.id)}
-                                disabled={isSavingQuestion}
+                                disabled={isQuestionBusy}
                               >
                                 Добавить
                               </button>
@@ -437,6 +642,85 @@ export function CardEditQuiz() {
                   })}
                 </div>
               )}
+
+              <div className="space-y-4 rounded-md border border-border/60 bg-card p-4">
+                <div className="text-sm font-medium text-foreground">Создать новый вопрос</div>
+                <Input
+                  placeholder="Текст нового вопроса"
+                  value={newQuestionText}
+                  onChange={(event) => setNewQuestionText(event.target.value)}
+                  disabled={isCreatingQuestion}
+                />
+                <div className="space-y-2">
+                  {newQuestionOptions.map((option, optionIndex) => (
+                    <div
+                      key={`new-option-${optionIndex}`}
+                      className="flex flex-wrap items-center gap-2"
+                    >
+                      <Input
+                        placeholder={`Ответ ${optionIndex + 1}`}
+                        value={option}
+                        onChange={(event) =>
+                          handleNewQuestionOptionChange(optionIndex, event.target.value)
+                        }
+                        disabled={isCreatingQuestion}
+                      />
+                      <button
+                        type="button"
+                        className={cn(styles.buttonClassName, styles.deleteButton)}
+                        onClick={() => handleRemoveNewQuestionOption(optionIndex)}
+                        disabled={isCreatingQuestion || newQuestionOptions.length <= 1}
+                        title="Удалить ответ"
+                      >
+                        Удалить
+                      </button>
+                    </div>
+                  ))}
+                  <button
+                    type="button"
+                    className={cn(styles.buttonClassName, styles.addButton)}
+                    onClick={handleAddNewQuestionOption}
+                    disabled={isCreatingQuestion}
+                  >
+                    Добавить вариант ответа
+                  </button>
+                </div>
+                <div className="flex flex-wrap items-center gap-2">
+                  <label
+                    className="text-xs uppercase tracking-wide text-muted-foreground"
+                    htmlFor="new-question-position"
+                  >
+                    Поставить после
+                  </label>
+                  <select
+                    id="new-question-position"
+                    className="rounded-md border border-border/60 bg-background px-3 py-2 text-sm text-foreground"
+                    value={
+                      typeof newQuestionPosition === 'number'
+                        ? String(newQuestionPosition)
+                        : newQuestionPosition
+                    }
+                    onChange={(event) => handleNewQuestionPositionChange(event.target.value)}
+                    disabled={isCreatingQuestion}
+                  >
+                    <option value="start">Перед первым вопросом</option>
+                    {data.map((question, questionIndex) => (
+                      <option key={`position-${question.id}`} value={question.id}>
+                        После вопроса №{questionIndex + 1}
+                      </option>
+                    ))}
+                    <option value="end">В конце списка</option>
+                  </select>
+                </div>
+                <button
+                  type="button"
+                  className={cn(styles.buttonClassName, styles.addButton)}
+                  onClick={handleCreateNewQuestion}
+                  disabled={isCreatingQuestion}
+                >
+                  Создать вопрос
+                </button>
+              </div>
             </>
           )}
         </CardContent>
