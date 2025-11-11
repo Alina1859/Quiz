@@ -37,14 +37,16 @@ COPY --from=builder --chown=node:node /app/public ./public
 COPY --from=builder --chown=node:node /app/prisma ./prisma
 COPY --from=builder --chown=node:node /app/app/generated ./app/generated
 COPY --from=builder --chown=node:node /app/next.config.ts ./next.config.ts
+COPY --from=builder --chown=node:node /app/scripts ./scripts
 
 EXPOSE 3000
 
 ENV PORT=3000
 
 RUN mkdir -p /app/data && chown node:node /app/data
+RUN chmod +x ./scripts/entrypoint.sh
 
 USER node
 
-CMD ["npm", "run", "start"]
+CMD ["./scripts/entrypoint.sh"]
 
