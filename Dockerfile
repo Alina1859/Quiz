@@ -3,6 +3,7 @@
 FROM node:20-bookworm-slim AS base
 
 ENV NEXT_TELEMETRY_DISABLED=1
+ENV DATABASE_URL=file:/app/data/sqlite.db
 
 WORKDIR /app
 
