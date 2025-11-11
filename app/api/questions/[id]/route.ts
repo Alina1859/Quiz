@@ -22,9 +22,9 @@ const validateAdmin = (req: NextRequest) => {
   return { ok: true as const }
 }
 
-const parseQuestionId = (params: { id: number }) => {
+const parseQuestionId = (params: { id: string }) => {
   const { id } = params
-  const questionId = Number.parseInt(String(id), 10)
+  const questionId = Number.parseInt(id, 10)
 
   if (Number.isNaN(questionId)) {
     return { error: NextResponse.json({ error: 'Invalid question id' }, { status: 400 }) }
@@ -33,7 +33,7 @@ const parseQuestionId = (params: { id: number }) => {
   return { questionId }
 }
 
-export async function PUT(req: NextRequest, context: { params: { id: number } }) {
+export async function PUT(req: NextRequest, context: { params: Promise<{ id: string }> }) {
   try {
     const adminCheck = validateAdmin(req)
     if ('error' in adminCheck) {
@@ -100,7 +100,7 @@ export async function PUT(req: NextRequest, context: { params: { id: number } })
   }
 }
 
-export async function DELETE(req: NextRequest, context: { params: { id: number } }) {
+export async function DELETE(req: NextRequest, context: { params: Promise<{ id: string }> }) {
   try {
     const adminCheck = validateAdmin(req)
     if ('error' in adminCheck) {

@@ -27,17 +27,36 @@ export async function GET(req: NextRequest) {
       take: limit,
     })
 
+    type SubmissionAnswers = {
+      name?: string | null
+      contactMethod?: string | null
+      answers?: Array<{
+        questionId: number
+        questionText: string
+        questionNumber: number
+        answer: string
+      }>
+    } | null
+
+    type FingerprintPayload = (Record<string, unknown> & {
+      visitorId?: unknown
+    }) | null
+
     const submissions = results.map((result) => {
-      const answers = result.answers as any
-      const fingerprint = result.fingerprint as any
-      const fingerprintData = result.fingerprintData as any
+      const answers = result.answers as SubmissionAnswers
+      const fingerprintData = result.fingerprintData as FingerprintPayload
+      const visitorId =
+        typeof fingerprintData?.visitorId === 'string' ? fingerprintData.visitorId : null
       return {
         id: result.id,
-        name: answers?.name || 'Не указано',
+        name:
+          typeof answers?.name === 'string' && answers.name.trim().length > 0
+            ? answers.name
+            : 'Не указано',
         phone: result.phone,
         ipAddress: result.ipAddress || 'Не указано',
         userAgent: result.userAgent || null,
-        fingerprint: fingerprint || fingerprintData || null,
+        fingerprint: visitorId || fingerprintData || null,
         fingerprintData: fingerprintData || null,
         recaptchaVerified: result.recaptchaVerified,
         createdAt: result.createdAt.toISOString(),
