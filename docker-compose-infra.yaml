@@ -15,7 +15,8 @@ services:
       - "--entryPoints.web.address=:80"
       - "--certificatesresolvers.myresolver.acme.email=${EMAIL}"
       - "--certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json"
-      - "--certificatesresolvers.myresolver.acme.tlschallenge=true"
+      - "--certificatesresolvers.myresolver.acme.httpchallenge=true"
+      - "--certificatesresolvers.myresolver.acme.httpchallenge.entrypoint=web"
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.dashboard.rule=Host(`traefik.${HOST}`)"
@@ -38,5 +39,3 @@ networks:
   trfk:
     driver: bridge
 
-volumes:
-  desktop_volume:
