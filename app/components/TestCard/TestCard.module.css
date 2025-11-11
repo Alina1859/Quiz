@@ -1,0 +1,64 @@
+.testCard {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+}
+
+.contentWrapper {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.stepIndicator {
+  font-family: var(--font-inter-tight), system-ui, sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 24px;
+  color: var(--color-text-disabled);
+  margin-bottom: 16px;
+}
+
+.buttonsContainer {
+  display: flex;
+  gap: 10px;
+  align-items: stretch;
+}
+
+.question {
+  font-family: var(--font-bebas-neue), var(--font-inter-tight), system-ui, sans-serif;
+  font-size: 36px;
+  font-weight: 700;
+  line-height: 38px;
+  letter-spacing: 0%;
+  text-transform: uppercase;
+  color: var(--color-text-default);
+  margin-bottom: 72px;
+}
+
+.options {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  margin-bottom: 100px;
+}
+
+@media (max-width: 1200px) {
+  .stepIndicator {
+    font-size: 14px;
+    line-height: 20px;
+  }
+}
+
+@media (max-width: 600px) {
+  .stepIndicator {
+    font-size: 14px;
+    line-height: 20px;
+  }
+
+  .question {
+    font-size: 28px;
+    line-height: 32px;
+  }
+}

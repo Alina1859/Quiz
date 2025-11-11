@@ -1,0 +1,68 @@
+.main {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+.backgroundContainer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  overflow: hidden;
+  background: url('/images/Background_Photo.webp') center / cover no-repeat fixed;
+}
+
+.backgroundContainer.slideLeft {
+  transform: translateX(calc(-23%));
+}
+
+.logoContainer {
+  position: absolute;
+  top: 20px;
+  left: 40px;
+  z-index: 10;
+  width: 72px;
+  height: 24px;
+  cursor: pointer;
+}
+
+.logo {
+  width: 72px;
+  height: 24px;
+}
+
+@media (max-width: 1200px) {
+  .logoContainer {
+    left: 20px;
+  }
+
+  .backgroundContainer.slideLeft {
+    transform: none;
+  }
+
+  .backgroundContainer {
+    top: 0;
+    background-attachment: scroll;
+    width: 100%;
+    transition:
+      transform 0.3s ease-out,
+      height 0.3s ease-out;
+    background: url('/images/Background_Photo_mob.png') bottom / no-repeat fixed;
+  }
+
+  .backgroundContainer.quizOpen {
+    background: url('/images/Background_Photo_Quiz.png') center / no-repeat fixed;
+  }
+}
+
+@media (max-width: 768px) {
+  .backgroundContainer.slideLeft {
+    transform: none;
+  }
+}

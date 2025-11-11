@@ -1,0 +1,26 @@
+version: '3.3'
+
+services:
+  front-prod:
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: file:/app/data/sqlite.db
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    container_name: front-prod
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.front-prod.rule=Host(`${HOST}`)"
+      - "traefik.http.routers.front-prod.entrypoints=websecure"
+      - "traefik.http.routers.front-prod.tls.certresolver=myresolver"
+      - "traefik.http.services.front-prod.loadbalancer.server.port=3000"
+    volumes:
+      - db-data-prod:/app/data
+    networks:
+      - trfk
+
+networks:
+  trfk:
+    driver: bridge

@@ -1,0 +1,30 @@
+:root {
+  --color-text-default: #ffffff;
+  --color-text-secondary: rgba(255, 255, 255, 0.64);
+  --color-text-accent: #f2be5f;
+  --color-text-default-inverse: #141414;
+  --color-text-secondary-inverse: rgba(20, 20, 20, 0.52);
+  --color-text-critical: #f04438;
+  --color-text-disabled: rgba(255, 255, 255, 0.4);
+
+  --color-bg-default: #141414;
+  --color-bg-accent-default: #f2be5f;
+  --color-bg-accent-hover: #d9a23f;
+  --color-bg-accent-default-light: rgba(242, 190, 95, 0.16);
+  --color-bg-neutral-search: #2f2f2f;
+  --color-bg-neutral-low: #222222;
+  --color-bg-neutral-med: rgba(255, 255, 255, 0.1);
+
+  --color-icon-default: #ffffff;
+  --color-icon-accent: #f2be5f;
+
+  --color-border-critical-default: #f04438;
+  --color-border-neutral-high: rgba(255, 255, 255, 0.16);
+
+  --color-bg-admin-default: #ffffff;
+  --color-bg-admin-card: #f5f5f5;
+  --color-scrollbar-admin: rgba(255, 255, 255, 0.64);
+  --color-bg-admin-delete: #f04438;
+  --color-bg-admin-edit: #7f7f7f;
+  --color-bg-admin-add: #7f7f7f;
+}

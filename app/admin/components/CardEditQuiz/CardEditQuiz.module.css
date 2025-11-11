@@ -1,0 +1,81 @@
+.buttonClassName {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.375rem;
+  border: 2px solid var(--muted);
+  background-color: var(--background);
+  padding: 0.25rem 0.75rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  line-height: 1.25rem;
+  color: var (--color-text-default-inverse);
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease,
+    opacity 0.2s ease;
+  cursor: pointer;
+}
+
+.buttonClassName:hover {
+  background-color: var(--muted);
+}
+
+.editButton {
+  background-color: var(--color-bg-admin-edit);
+  border-color: var(--color-bg-admin-edit);
+  color: var(--color-bg-admin-default);
+}
+
+.editButton:hover:not(:disabled) {
+  background-color: var(--color-bg-admin-edit);
+  opacity: 0.9;
+}
+
+.addButton {
+  background-color: var(--color-bg-admin-add);
+  border-color: var(--color-bg-admin-add);
+  color: var(--color-bg-admin-default);
+}
+
+.addButton:hover:not(:disabled) {
+  background-color: var(--color-bg-admin-add);
+  opacity: 0.9;
+}
+
+.cancelButton {
+  background-color: var(--color-bg-admin-delete);
+  border-color: var(--color-bg-admin-delete);
+  color: var(--color-bg-admin-default);
+}
+
+.cancelButton:hover:not(:disabled) {
+  background-color: var(--color-bg-admin-delete);
+  opacity: 0.9;
+}
+
+.buttonClassName:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.deleteButton {
+  background-color: var(--color-bg-admin-delete);
+  border-color: var(--color-bg-admin-delete);
+  color: var(--color-bg-admin-default);
+}
+
+.deleteButton:hover {
+  background-color: var(--color-bg-admin-delete);
+  opacity: 0.9;
+}
+
+.card {
+  gap: 0;
+}
+
+.title {
+  font-size: 20px;
+  font-weight: bold;
+}

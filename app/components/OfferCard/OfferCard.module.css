@@ -1,0 +1,123 @@
+.offerCard {
+  position: absolute;
+  bottom: 40px;
+  left: 40px;
+  max-width: 550px;
+  max-height: 358px;
+  background: linear-gradient(225deg, transparent 20px, var(--color-bg-default) 20px);
+  padding: 24px;
+  box-sizing: border-box;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  overflow-y: hidden;
+  overflow-x: hidden;
+  transition: transform 0.3s ease-out;
+  filter: url(#round);
+}
+
+.offerCard.slideLeft {
+  transform: translateX(-100%);
+  opacity: 0;
+  visibility: hidden;
+}
+
+.offerCard::-webkit-scrollbar {
+  width: 4px;
+}
+
+.offerCard::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.offerCard::-webkit-scrollbar-thumb {
+  background: var(--color-bg-neutral-med);
+  border-radius: 2px;
+}
+
+.offerCard::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.title {
+  font-family: var(--font-bebas-neue), var(--font-inter-tight), system-ui, sans-serif;
+  color: var(--color-text-default);
+  font-size: 42px;
+  font-weight: 700;
+  line-height: 42px;
+  letter-spacing: 0%;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+  font-style: normal;
+}
+
+.subtitle {
+  font-family: var(--font-inter-tight), system-ui, sans-serif;
+  color: var(--color-text-default);
+  font-size: 16px;
+  font-weight: 400;
+  font-style: normal;
+  line-height: 24px;
+  letter-spacing: 0%;
+  margin-bottom: 32px;
+}
+
+.features {
+  font-family: var(--font-inter-tight), system-ui, sans-serif;
+  color: var(--color-text-disabled);
+  font-size: 12px;
+  font-weight: 400;
+  font-style: normal;
+  line-height: 16px;
+  letter-spacing: 0%;
+  max-width: 344px;
+}
+
+@media (max-width: 1200px) {
+  .offerCard {
+    bottom: 0px;
+    left: 0px;
+    right: 0px;
+    max-width: 100%;
+    max-height: none;
+    padding: 20px;
+    border-radius: 12px 12px 0 0;
+    filter: none;
+    background: var(--color-bg-default);
+  }
+
+  .title {
+    letter-spacing: 2px;
+  }
+
+  .features {
+    max-width: 440px;
+  }
+}
+
+@media (max-width: 600px) {
+  .offerCard {
+    bottom: 0px;
+    left: 0px;
+    right: 0px;
+    width: 100%;
+    padding: 20px;
+    border-radius: 12px 12px 0 0;
+  }
+
+  .title {
+    font-size: 28px;
+    line-height: 32px;
+    letter-spacing: 0px;
+  }
+
+  .subtitle {
+    font-size: 14px;
+    line-height: 20px;
+    letter-spacing: 0px;
+  }
+
+  .features {
+    max-width: 100%;
+  }
+}
