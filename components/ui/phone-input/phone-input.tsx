@@ -236,7 +236,7 @@ export const PhoneInput = React.forwardRef<HTMLDivElement, PhoneInputProps>(
                 backgroundColor: 'var(--color-bg-neutral-low)',
                 opacity: 'none',
                 color: 'var(--color-text-default)',
-                fontFamily: "'Inter Tight Regular'",
+                fontFamily: 'var(--font-inter-tight), system-ui, sans-serif',
                 fontWeight: 400,
                 fontSize: '16px',
                 lineHeight: '24px',

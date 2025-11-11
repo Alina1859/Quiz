@@ -39,7 +39,7 @@ body {
   width: 100%;
   height: 100%;
   overflow: hidden;
-  background: url('/images/Background_Photo.png') center / cover no-repeat fixed;
+  background: url('/images/Background_Photo.webp') center / cover no-repeat fixed;
 }
 
 #__next {

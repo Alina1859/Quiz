@@ -1,5 +1,5 @@
 .buttonText {
-  font-family: 'Inter Tight SemiBold';
+  font-family: var(--font-inter-tight), system-ui, sans-serif;
   font-size: 16px;
   font-weight: 600;
   font-style: normal;

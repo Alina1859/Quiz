@@ -40,7 +40,7 @@
 }
 
 .title {
-  font-family: 'Bebas Neue';
+  font-family: var(--font-bebas-neue), var(--font-inter-tight), system-ui, sans-serif;
   color: var(--color-text-default);
   font-size: 42px;
   font-weight: 700;
@@ -52,7 +52,7 @@
 }
 
 .subtitle {
-  font-family: 'Inter Tight Regular';
+  font-family: var(--font-inter-tight), system-ui, sans-serif;
   color: var(--color-text-default);
   font-size: 16px;
   font-weight: 400;
@@ -63,7 +63,7 @@
 }
 
 .features {
-  font-family: 'Inter Tight Regular';
+  font-family: var(--font-inter-tight), system-ui, sans-serif;
   color: var(--color-text-disabled);
   font-size: 12px;
   font-weight: 400;

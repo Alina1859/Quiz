@@ -10,3 +10,4 @@ export const FlagComponent = ({ country, countryName }: RPNInput.FlagProps) => {
     </span>
   )
 }
+

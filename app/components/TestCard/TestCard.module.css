@@ -12,7 +12,7 @@
 }
 
 .stepIndicator {
-  font-family: 'Inter Tight Regular';
+  font-family: var(--font-inter-tight), system-ui, sans-serif;
   font-size: 16px;
   font-weight: 400;
   line-height: 24px;
@@ -27,7 +27,7 @@
 }
 
 .question {
-  font-family: 'Bebas Neue';
+  font-family: var(--font-bebas-neue), var(--font-inter-tight), system-ui, sans-serif;
   font-size: 36px;
   font-weight: 700;
   line-height: 38px;

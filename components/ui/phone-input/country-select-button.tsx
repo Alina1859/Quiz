@@ -53,7 +53,7 @@ export const CountrySelectButton = ({
         <span
           style={{
             color: 'var(--color-text-default)',
-            fontFamily: "'Inter Tight Regular'",
+            fontFamily: 'var(--font-inter-tight), system-ui, sans-serif',
             fontWeight: 400,
             fontSize: '16px',
             lineHeight: '24px',

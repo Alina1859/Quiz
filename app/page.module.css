@@ -15,7 +15,7 @@
   height: 100%;
   z-index: 0;
   overflow: hidden;
-  background: url('/images/Background_Photo.png') center / cover no-repeat fixed;
+  background: url('/images/Background_Photo.webp') center / cover no-repeat fixed;
 }
 
 .backgroundContainer.slideLeft {
