@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import useResizeObserver from 'use-resize-observer'
+import useResizeObserver from '@/app/hooks/useResizeObserver'
 import styles from './QuizPanel.module.css'
 import TestCard from '../TestCard/TestCard'
 import ContactForm from '../ContactForm/ContactForm'

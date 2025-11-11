@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import useResizeObserver from 'use-resize-observer'
+import useResizeObserver from '@/app/hooks/useResizeObserver'
 import styles from './OfferCard.module.css'
 import MainButton from '../Buttons/MainButton/MainButton'
 
