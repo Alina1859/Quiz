@@ -1,5 +1,4 @@
-export {}
-import { PrismaClient } from '@prisma/client'
+const { PrismaClient } = require('@prisma/client')
 
 const prisma = new PrismaClient()
 
@@ -8,7 +7,9 @@ async function main() {
 
   try {
     await prisma.$executeRaw`DELETE FROM sqlite_sequence WHERE name = 'Question';`
-  } catch (e) {}
+  } catch (error) {
+    // ignore missing sqlite_sequence table for non-auto-increment databases
+  }
 
   await prisma.question.createMany({
     data: [
@@ -50,6 +51,12 @@ async function main() {
   console.log('✅ 4 вопроса квиза успешно добавлены в базу данных')
 }
 
-main().finally(async () => {
-  await prisma.$disconnect()
-})
+main()
+  .catch((error) => {
+    console.error('❌ Ошибка при добавлении вопросов.', error)
+    process.exit(1)
+  })
+  .finally(async () => {
+    await prisma.$disconnect()
+  })
+

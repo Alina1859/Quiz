@@ -23,7 +23,7 @@ npm install
 ```
 npm run prisma:generate
 npm run prisma:push
-npx ts-node prisma/seed.ts
+npm run db:seed
 ```
 
 4. Run dev server:
