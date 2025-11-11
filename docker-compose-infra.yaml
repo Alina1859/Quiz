@@ -17,6 +17,12 @@ services:
       - "--certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json"
       - "--certificatesresolvers.myresolver.acme.httpchallenge=true"
       - "--certificatesresolvers.myresolver.acme.httpchallenge.entrypoint=web"
+      - "--accesslog=true"
+      - "--accesslog.filepath=/var/log/traefik/access.log"
+      - "--accesslog.fields.names.ClientAddr=keep"
+      - "--accesslog.fields.names.ClientPort=keep"
+      - "--accesslog.fields.headers.names.X-Forwarded-For=keep"
+      - "--accesslog.fields.headers.names.X-Real-IP=keep"
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.dashboard.rule=Host(`traefik.${HOST}`)"
@@ -31,6 +37,7 @@ services:
     volumes:
       - "./usersfile:/etc/traefik/usersfile:ro"
       - "./letsencrypt:/letsencrypt"
+      - "./logs/traefik:/var/log/traefik"
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
     networks:
       - trfk
