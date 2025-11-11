@@ -26,6 +26,9 @@ FROM base AS runner
 
 ENV NODE_ENV=production
 
+ENV NEXT_TELEMETRY_DISABLED=1
+ENV DATABASE_URL=file:/app/data/sqlite.db
+
 COPY --from=builder --chown=node:node /app/package.json ./package.json
 COPY --from=builder --chown=node:node /app/package-lock.json ./package-lock.json
 COPY --from=builder --chown=node:node /app/node_modules ./node_modules
