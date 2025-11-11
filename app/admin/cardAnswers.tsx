@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/table'
 import { ChevronDown, ChevronUp } from 'lucide-react'
 import { formatFingerprintTimestamp, getFingerprintFieldValue } from '@/app/lib/fingerprintParser'
-import type { Submission } from './page'
+import type { Submission } from '@/types/admin'
 
 interface CardAnswersProps {
   isLoadingSubmissions: boolean

@@ -16,6 +16,7 @@ const FIELD_CONFIG = [
   { key: 'ipAddress', label: 'IP адрес' },
   { key: 'phone', label: 'Телефон' },
   { key: 'recaptchaVerified', label: 'reCAPTCHA' },
+  { key: 'fingerprint', label: 'Fingerprint' },
   { key: 'timestamp', label: 'Последнее обновление' },
 ] as const
 
