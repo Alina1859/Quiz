@@ -1,4 +1,4 @@
-version: '3.3'
+version: "3.3"
 
 services:
   front-prod:
@@ -24,3 +24,6 @@ services:
 networks:
   trfk:
     driver: bridge
+
+volumes:
+  db-data-prod:
