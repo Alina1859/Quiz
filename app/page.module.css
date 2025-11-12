@@ -49,11 +49,8 @@
   .backgroundContainer {
     top: 0;
     background-attachment: scroll;
-    width: 100%;
-    transition:
-      transform 0.3s ease-out,
-      height 0.3s ease-out;
     background: url('/images/Background_Photo_mob.png') bottom / no-repeat fixed;
+    width: 100%;
   }
 
   .backgroundContainer.quizOpen {

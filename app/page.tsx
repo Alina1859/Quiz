@@ -11,6 +11,7 @@ export default function Home() {
   const [offerCardHeight, setOfferCardHeight] = useState(0)
   const [quizPanelHeight, setQuizPanelHeight] = useState(0)
   const [windowWidth, setWindowWidth] = useState(0)
+  const [sessionToken, setSessionToken] = useState<string | null>(null)
 
   useEffect(() => {
     setWindowWidth(window.innerWidth)
@@ -27,12 +28,18 @@ export default function Home() {
     setIsQuizOpen(true)
   }
 
+  const handleSessionStarted = (token: string) => {
+    setSessionToken(token)
+  }
+
   const handleCloseQuiz = () => {
     setIsQuizOpen(false)
+    setSessionToken(null)
   }
 
   const handleResetQuiz = () => {
     setIsQuizOpen(false)
+    setSessionToken(null)
   }
 
   const handleOfferCardHeightChange = (height: number) => {
@@ -87,12 +94,14 @@ export default function Home() {
           onStartClick={handleStartQuiz}
           isQuizOpen={isQuizOpen}
           onHeightChange={handleOfferCardHeightChange}
+          onSessionStarted={handleSessionStarted}
         />
 
         <QuizPanel
           isOpen={isQuizOpen}
           onClose={handleCloseQuiz}
           onReset={handleResetQuiz}
+          sessionToken={sessionToken}
           onHeightChange={handleQuizPanelHeightChange}
         />
       </main>

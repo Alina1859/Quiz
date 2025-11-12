@@ -196,17 +196,40 @@ export default function ContactForm({ answers, onSubmit: onSubmitProp }: Contact
                 'Получить подборку'
               )}
             </MainButton>
-            <p className={styles.consentText}>
-              Нажимая кнопку, я соглашаюсь на{' '}
-              <a
-                href="https://uaeinvest.ru/consert"
-                target="_blank"
-                rel="noopener noreferrer"
-                className={styles.consentLink}
-              >
-                обработку персональных данных
-              </a>
-            </p>
+
+            <div style={{ height: '100%' }}>
+              <p className={styles.consentText}>
+                Нажимая кнопку, я соглашаюсь на{' '}
+                <a
+                  href="https://uaeinvest.ru/consert"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={styles.consentLink}
+                >
+                  обработку персональных данных
+                </a>
+              </p>
+
+              <span className={styles.consentText} style={{ fontSize: 9, margin: 0 }}>
+                This site is protected by reCAPTCHA and the Google{' '}
+                <a
+                  href="https://policies.google.com/privacy"
+                  target="_blank"
+                  className={styles.consentLink}
+                >
+                  Privacy Policy
+                </a>{' '}
+                and{' '}
+                <a
+                  href="https://policies.google.com/terms"
+                  target="_blank"
+                  className={styles.consentLink}
+                >
+                  Terms of Service
+                </a>{' '}
+                apply.
+              </span>
+            </div>
           </div>
         </form>
       </Form>

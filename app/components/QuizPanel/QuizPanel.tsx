@@ -12,6 +12,7 @@ interface QuizPanelProps {
   isOpen: boolean
   onClose: () => void
   onReset: () => void
+  sessionToken: string | null
   onHeightChange?: (height: number) => void
 }
 
@@ -21,7 +22,13 @@ interface Question {
   options: string[]
 }
 
-export default function QuizPanel({ isOpen, onClose, onReset, onHeightChange }: QuizPanelProps) {
+export default function QuizPanel({
+  isOpen,
+  onClose,
+  onReset,
+  sessionToken,
+  onHeightChange,
+}: QuizPanelProps) {
   const [currentStep, setCurrentStep] = useState(1)
   const [questions, setQuestions] = useState<Question[]>([])
   const [loading, setLoading] = useState(true)
@@ -110,10 +117,16 @@ export default function QuizPanel({ isOpen, onClose, onReset, onHeightChange }: 
         }
       })
 
+      if (!sessionToken) {
+        console.error('Quiz session token is missing')
+        return
+      }
+
       const response = await fetch('/api/quiz/submit', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          Authorization: `Bearer ${sessionToken}`,
         },
         body: JSON.stringify({
           answers: orderedAnswers,

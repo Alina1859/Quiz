@@ -31,10 +31,12 @@
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
     "cookie": "^1.0.2",
+    "jose": "^6.1.1",
     "jquery": "^3.7.1",
     "lucide-react": "^0.552.0",
     "next": "16.0.0",
     "prisma": "^6.18.0",
+    "rate-limiter-flexible": "^8.2.0",
     "react": "19.2.0",
     "react-dom": "19.2.0",
     "react-hook-form": "^7.66.0",
@@ -42,9 +44,9 @@
     "react-phone-number-input": "^3.4.13",
     "tailwind-merge": "^3.3.1",
     "tailwindcss-animate": "^1.0.7",
+    "typescript": "^5",
     "uuid": "^13.0.0",
-    "zod": "^3.25.76",
-    "typescript": "^5"
+    "zod": "^3.25.76"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",

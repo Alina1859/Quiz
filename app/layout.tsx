@@ -22,8 +22,36 @@ const interTight = localFont({
 })
 
 export const metadata: Metadata = {
-  title: 'Quiz API',
-  description: 'Quiz API Backend',
+  title: 'DDA Real Estat I Недвижимость ОАЭ от застройщиков',
+  description:
+    'Недвижимость Дубая напрямую от застройщиков. Рассрочка 0% до 7 лет. Вся база недвижимости ОАЭ',
+  openGraph: {
+    title: 'DDA Real Estate — Недвижимость ОАЭ от застройщиков',
+    description:
+      'Подберём элитную недвижимость в Дубае под ваши цели и бюджет. Рассрочка до 7 лет, работаем напрямую с застройщиками.',
+    url: 'https://dda-real-estate.example.com',
+    siteName: 'DDA Real Estate',
+    locale: 'ru_RU',
+    type: 'website',
+    images: [
+      {
+        url: '/favicon/web-app-manifest-512x512.png',
+        width: 1200,
+        height: 630,
+        alt: 'DDA Real Estate — Недвижимость в Дубае',
+      },
+    ],
+  },
+  icons: {
+    icon: [
+      { url: '/favicon/favicon.ico' },
+      { url: '/favicon/favicon.svg', type: 'image/svg+xml' },
+      { url: '/favicon/favicon-96x96.png', sizes: '96x96', type: 'image/png' },
+    ],
+    apple: [{ url: '/favicon/apple-touch-icon.png', sizes: '180x180', type: 'image/png' }],
+    shortcut: ['/favicon/favicon.ico'],
+  },
+  manifest: '/favicon/site.webmanifest',
 }
 
 export default function RootLayout({

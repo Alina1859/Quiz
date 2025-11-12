@@ -9,11 +9,18 @@ interface OfferCardProps {
   onStartClick: () => void
   isQuizOpen: boolean
   onHeightChange?: (height: number) => void
+  onSessionStarted?: (token: string) => void
 }
 
-export default function OfferCard({ onStartClick, isQuizOpen, onHeightChange }: OfferCardProps) {
+export default function OfferCard({
+  onStartClick,
+  isQuizOpen,
+  onHeightChange,
+  onSessionStarted,
+}: OfferCardProps) {
   const { ref, height = 0 } = useResizeObserver<HTMLDivElement>()
   const [windowWidth, setWindowWidth] = useState(0)
+  const [isStarting, setIsStarting] = useState(false)
 
   useEffect(() => {
     setWindowWidth(window.innerWidth)
@@ -31,6 +38,39 @@ export default function OfferCard({ onStartClick, isQuizOpen, onHeightChange }: 
   }, [height, onHeightChange])
 
   const buttonMaxHeight = windowWidth > 0 && windowWidth <= 600 ? 44 : undefined
+  const handleStartClick = async () => {
+    if (isStarting) {
+      return
+    }
+
+    try {
+      setIsStarting(true)
+      const response = await fetch('/api/quiz/start', {
+        method: 'POST',
+        credentials: 'include',
+      })
+
+      if (!response.ok) {
+        console.error('Failed to start quiz session')
+        return
+      }
+
+      const data = await response.json()
+      const token = data?.token
+
+      if (typeof token !== 'string' || token.length === 0) {
+        console.error('Quiz session token is missing in response')
+        return
+      }
+
+      onSessionStarted?.(token)
+      onStartClick()
+    } catch (error) {
+      console.error('Error starting quiz session', error)
+    } finally {
+      setIsStarting(false)
+    }
+  }
 
   return (
     <div ref={ref} className={`${styles.offerCard} ${isQuizOpen ? styles.slideLeft : ''}`}>
@@ -44,9 +84,10 @@ export default function OfferCard({ onStartClick, isQuizOpen, onHeightChange }: 
       </p>
 
       <MainButton
-        onClick={onStartClick}
+        onClick={handleStartClick}
         maxHeight={buttonMaxHeight}
         style={{ marginBottom: '12px' }}
+        disabled={isStarting}
       >
         Начать подбор
       </MainButton>
