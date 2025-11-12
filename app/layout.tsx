@@ -22,7 +22,7 @@ const interTight = localFont({
 })
 
 export const metadata: Metadata = {
-  title: 'DDA Real Estat I Недвижимость ОАЭ от застройщиков',
+  title: 'Купить квартиру в Дубае | ОАЭ от застройщика',
   description:
     'Недвижимость Дубая напрямую от застройщиков. Рассрочка 0% до 7 лет. Вся база недвижимости ОАЭ',
   openGraph: {
