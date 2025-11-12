@@ -78,10 +78,10 @@ export default function OfferCard({
         Подберите элитную недвижимость в Дубае под ваши цели и бюджет — за 1 минуту
       </h1>
 
-      <p className={styles.subtitle}>
+      <h2 className={styles.subtitle}>
         Ответьте на несколько вопросов, и мы подберём лучшие варианты от застройщиков с актуальными
         ценами и рассрочкой 0%
-      </p>
+      </h2>
 
       <MainButton
         onClick={handleStartClick}
@@ -92,10 +92,10 @@ export default function OfferCard({
         Начать подбор
       </MainButton>
 
-      <p className={styles.features}>
+      <h3 className={styles.features}>
         Без комиссии • Только проверенные застройщики • Юридическое сопровождение сделки •
         Сертификат DLD
-      </p>
+      </h3>
     </div>
   )
 }
