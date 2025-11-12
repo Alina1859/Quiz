@@ -257,7 +257,7 @@ export const PhoneInput = React.forwardRef<HTMLDivElement, PhoneInputProps>(
             />
           </div>
           <PopoverContent
-            className="p-0 mt-2 rounded-[12px] border-none w-[375px] max-w-[375px]"
+            className="p-0 mt-2 rounded-[12px] border-none max-w-[375px]"
             side="bottom"
             align="start"
             asChild
