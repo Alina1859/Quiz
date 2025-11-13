@@ -7,6 +7,7 @@ import TestCard from '../TestCard/TestCard'
 import ContactForm from '../ContactForm/ContactForm'
 import SuccessScreen from '../SuccessScreen/SuccessScreen'
 import { useFingerprint } from '@/app/hooks/useFingerprint'
+import ym from 'react-yandex-metrika'
 
 interface QuizPanelProps {
   isOpen: boolean
@@ -142,6 +143,15 @@ export default function QuizPanel({
         const result = await response.json()
         console.log('Quiz submitted successfully:', result)
         setIsSuccess(true)
+        
+        if (typeof window !== 'undefined') {
+          const answersCount = Object.keys(orderedAnswers).length
+          ym('reachGoal', 'form_submit', {
+            contactMethod: data.contactMethod,
+            answersCount: answersCount,
+            questionsCount: questions.length,
+          })
+        }
       } else {
         console.error('Failed to submit quiz')
       }

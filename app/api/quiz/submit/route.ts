@@ -104,20 +104,20 @@ export async function POST(req: NextRequest) {
     })
 
     if (!rateLimitResult.allowed) {
-      return NextResponse.json({ message: 'Quiz submitted successfully. rate limit' })
+      return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 })
     }
 
     const authHeader = req.headers.get('authorization')
     const bearerToken = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : null
 
     if (!bearerToken) {
-      return NextResponse.json({ message: 'Quiz submitted successfully. bearerToken' })
+      return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 })
     }
 
     const verifiedToken = await verifySessionToken(bearerToken)
 
     if (!verifiedToken) {
-      return NextResponse.json({ message: 'Quiz submitted successfully. verifiedToken' })
+      return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 })
     }
 
     if (
@@ -126,7 +126,7 @@ export async function POST(req: NextRequest) {
       ip !== 'unknown' &&
       verifiedToken.ip !== ip
     ) {
-      return NextResponse.json({ message: 'Quiz submitted successfully. ip' })
+      return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 })
     }
 
     if (
@@ -135,7 +135,7 @@ export async function POST(req: NextRequest) {
       userAgent &&
       verifiedToken.ua !== userAgent
     ) {
-      return NextResponse.json({ message: 'Quiz submitted successfully. ua' })
+      return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 })
     }
 
     const session = await prisma.quizSession.findUnique({
@@ -143,42 +143,39 @@ export async function POST(req: NextRequest) {
     })
 
     if (!session) {
-      return NextResponse.json({ message: 'Quiz submitted successfully.' })
+      return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 })
     }
 
     if (session.status !== 'active') {
-      return NextResponse.json({ message: 'Quiz submitted successfully.' })
+      return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 })
     }
 
     if (session.expiresAt.getTime() < Date.now()) {
-      return NextResponse.json({ message: 'Quiz submitted successfully.' })
+      return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 })
     }
-    let validatedFingerprintData: Prisma.InputJsonValue | undefined
+    let validatedFingerprintData: any
 
     if (fingerprintData) {
       const parsedFingerprint = fingerprintSchema.safeParse(fingerprintData)
 
       if (!parsedFingerprint.success) {
         console.error('Invalid fingerprint data:', parsedFingerprint.error.flatten())
-        return NextResponse.json({ message: 'Quiz submitted successfully.' })
+        return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 })
       }
 
-      validatedFingerprintData = parsedFingerprint.data as Prisma.InputJsonValue
+      validatedFingerprintData = parsedFingerprint.data
     }
     if (!recaptchaToken) {
-      return NextResponse.json({ message: 'Quiz submitted successfully.' })
+      return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 })
     }
 
     const verificationResult = await verifyRecaptcha(recaptchaToken, ip)
-    if (!verificationResult.success) {
-      console.error('reCAPTCHA verification failed:', verificationResult.errorCodes)
-      return NextResponse.json({ message: 'Quiz submitted successfully.' })
-    }
+    
 
-    const recaptchaVerified: boolean = true
+    const recaptchaVerified = verificationResult.success
 
     if (!answers || !name || !phone || !contactMethod) {
-      return NextResponse.json({ message: 'Quiz submitted successfully.' })
+      return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 })
     }
 
     const questions = await prisma.question.findMany({
@@ -238,7 +235,7 @@ export async function POST(req: NextRequest) {
         phone,
         ipAddress: ip,
         userAgent: userAgent,
-        fingerprintData: validatedFingerprintData ?? Prisma.JsonNull,
+        fingerprintData: validatedFingerprintData ?? null,
         recaptchaVerified: recaptchaVerified,
         answers: {
           answers: orderedAnswers,
@@ -252,6 +249,11 @@ export async function POST(req: NextRequest) {
       where: { id: session.id },
       data: { status: 'completed' },
     })
+
+    if (!verificationResult.success) {
+      console.error('reCAPTCHA verification failed:', verificationResult.errorCodes)
+      return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 })
+    }
 
     return NextResponse.json({
       message: 'Quiz submitted successfully.',
