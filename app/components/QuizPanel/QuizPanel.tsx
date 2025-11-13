@@ -146,11 +146,12 @@ export default function QuizPanel({
         
         if (typeof window !== 'undefined') {
           const answersCount = Object.keys(orderedAnswers).length
-          ym('reachGoal', 'form_submit', {
-            contactMethod: data.contactMethod,
-            answersCount: answersCount,
-            questionsCount: questions.length,
-          })
+          ym('reachGoal','QUIZ_SUBMIT')
+          // ym('reachGoal', 'form_submit', {
+          //   contactMethod: data.contactMethod,
+          //   answersCount: answersCount,
+          //   questionsCount: questions.length,
+          // })
         }
       } else {
         console.error('Failed to submit quiz')

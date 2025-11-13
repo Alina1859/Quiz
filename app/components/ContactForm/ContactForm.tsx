@@ -97,7 +97,7 @@ export default function ContactForm({ answers, onSubmit: onSubmitProp }: Contact
       <p className={styles.title}>Подберите подходящие варианты под мои цели и бюджет</p>
 
       <Form {...form}>
-        <div  className={styles.form}>
+        <div className={styles.form}>
           <div className={styles.inputGroup}>
             <FormField
               control={form.control}
