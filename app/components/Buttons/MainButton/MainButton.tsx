@@ -3,7 +3,7 @@ import MainButtonText from './MainButtonText'
 
 interface MainButtonProps {
   children: React.ReactNode
-  onClick?: () => void
+  onClick?: (e: any) => void
   disabled?: boolean
   type?: 'button' | 'submit' | 'reset'
   maxHeight?: number | string

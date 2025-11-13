@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import React, { useState } from 'react'
 import styles from './ContactForm.module.css'
 import MainButton from '../Buttons/MainButton/MainButton'
 import OptionButton from '../Buttons/OptionButton/OptionButton'
@@ -50,7 +50,7 @@ export default function ContactForm({ answers, onSubmit: onSubmitProp }: Contact
     },
   })
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: any) => {
     e.preventDefault()
 
     const isValid = await form.trigger()
@@ -97,7 +97,7 @@ export default function ContactForm({ answers, onSubmit: onSubmitProp }: Contact
       <p className={styles.title}>Подберите подходящие варианты под мои цели и бюджет</p>
 
       <Form {...form}>
-        <form onSubmit={handleSubmit} className={styles.form}>
+        <div  className={styles.form}>
           <div className={styles.inputGroup}>
             <FormField
               control={form.control}
@@ -186,7 +186,9 @@ export default function ContactForm({ answers, onSubmit: onSubmitProp }: Contact
           />
 
           <div className={styles.submitButton}>
-            <MainButton type="submit" disabled={!isFormValid || isLoading}>
+            <MainButton onClick={(e: any) => {
+              handleSubmit(e)
+            }} type="submit" disabled={!isFormValid || isLoading}>
               {isLoading ? (
                 <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
                   <Spinner />
@@ -231,7 +233,7 @@ export default function ContactForm({ answers, onSubmit: onSubmitProp }: Contact
               </span>
             </div>
           </div>
-        </form>
+        </div>
       </Form>
     </div>
   )
