@@ -25,6 +25,9 @@ export const metadata: Metadata = {
   title: 'Купить квартиру в Дубае | ОАЭ от застройщика',
   description:
     'Недвижимость Дубая напрямую от застройщиков. Рассрочка 0% до 7 лет. Вся база недвижимости ОАЭ',
+  verification: {
+    yandex: "8dea18e78f02a1d4"
+  },
   openGraph: {
     title: 'DDA Real Estate — Недвижимость ОАЭ от застройщиков',
     description:
@@ -67,13 +70,44 @@ export default function RootLayout({
       style={{ height: '100%' }}
       className={`${bebasNeue.variable} ${interTight.variable}`}
     >
-      <body style={{ height: '100%', margin: 0, padding: 0, overflowY: 'auto' }}>
-        <Script
-          src={`https://www.google.com/recaptcha/api.js?render=${recaptchaSiteKey}`}
-          strategy="afterInteractive"
+    <body style={{ height: '100%', margin: 0, padding: 0, overflowY: 'auto' }}>
+    <Script
+      src={`https://www.google.com/recaptcha/api.js?render=${recaptchaSiteKey}`}
+      strategy="afterInteractive"
+    />
+    <Script>
+      {`    (function(m, e, t, r, i, k, a) {
+  m[i] = m[i] || function() {
+    (m[i].a = m[i].a || []).push(arguments)
+  }
+  m[i].l = 1 * new Date()
+  for (var j = 0; j < document.scripts.length; j++) {
+    if (document.scripts[j].src === r) {
+      return
+    }
+  }
+  k = e.createElement(t), a = e.getElementsByTagName(t)[0], k.async = 1, k.src = r, a.parentNode.insertBefore(k, a)
+})(window, document, 'script', 'https://mc.yandex.ru/metrika/tag.js?id=105288522', 'ym')
+ym(105288522, 'init', {
+  ssr: true,
+  webvisor: true,
+  clickmap: true,
+  ecommerce: 'dataLayer',
+  accurateTrackBounce: true,
+  trackLinks: true,
+})`}
+    </Script>
+    <noscript>
+      <div>
+        <img
+          src={`https://mc.yandex.ru/watch/105288522`}
+          style={{ position: "absolute", left: "-9999px;" }}
+          alt=""
         />
-        {children}
-      </body>
+      </div>
+    </noscript>
+    {children}
+    </body>
     </html>
   )
 }
