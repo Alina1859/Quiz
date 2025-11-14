@@ -143,16 +143,19 @@ export default function QuizPanel({
         const result = await response.json()
         console.log('Quiz submitted successfully:', result)
         setIsSuccess(true)
-        
-        if (typeof window !== 'undefined') {
-          const answersCount = Object.keys(orderedAnswers).length
-          ym('reachGoal','QUIZ_SUBMIT')
-          // ym('reachGoal', 'form_submit', {
-          //   contactMethod: data.contactMethod,
-          //   answersCount: answersCount,
-          //   questionsCount: questions.length,
-          // })
-        }
+
+        console.log('reachGoal', 'QUIZ_SUBMIT')
+        ym('reachGoal', 'QUIZ_SUBMIT', {
+          answers: orderedAnswers,
+          name: data.name,
+          phone: data.phone,
+          contactMethod: data.contactMethod,
+        })
+        // ym('reachGoal', 'form_submit', {
+        //   contactMethod: data.contactMethod,
+        //   answersCount: answersCount,
+        //   questionsCount: questions.length,
+        // })
       } else {
         console.error('Failed to submit quiz')
       }

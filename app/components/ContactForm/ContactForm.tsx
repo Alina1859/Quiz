@@ -84,6 +84,8 @@ export default function ContactForm({ answers, onSubmit: onSubmitProp }: Contact
     } catch (error) {
       console.error('Ошибка reCAPTCHA:', error)
       setIsLoading(false)
+    } finally {
+      setIsLoading(false)
     }
   }
 
@@ -186,9 +188,13 @@ export default function ContactForm({ answers, onSubmit: onSubmitProp }: Contact
           />
 
           <div className={styles.submitButton}>
-            <MainButton onClick={(e: any) => {
-              handleSubmit(e)
-            }} type="submit" disabled={!isFormValid || isLoading}>
+            <MainButton
+              onClick={(e: any) => {
+                handleSubmit(e)
+              }}
+              type="submit"
+              disabled={!isFormValid || isLoading}
+            >
               {isLoading ? (
                 <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
                   <Spinner />
