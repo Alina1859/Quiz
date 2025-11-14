@@ -51,11 +51,33 @@ function getLimiter(route: string, limit: number): RateLimiterMemory {
   return limiter
 }
 
+function isIpWhitelisted(ip: string | null): boolean {
+  if (!ip || ip === 'unknown') {
+    return false
+  }
+
+  const whitelistEnv = process.env.RATE_LIMIT_WHITELIST_IPS
+  if (!whitelistEnv) {
+    return false
+  }
+
+  const whitelistedIps = whitelistEnv.split(',').map((ip) => ip.trim()).filter(Boolean)
+  return whitelistedIps.includes(ip)
+}
+
 export async function consumeDailyRateLimit({
   identifier,
   route,
   limit,
 }: RateLimitOptions): Promise<RateLimitResult> {
+  // Пропускаем rate limiting для IP-адресов из whitelist
+  if (isIpWhitelisted(identifier)) {
+    return {
+      allowed: true,
+      remaining: limit,
+    }
+  }
+
   const key = identifier && identifier !== 'unknown' ? identifier : 'anonymous'
   const limiter = getLimiter(route, limit)
 
