@@ -9,6 +9,7 @@ const YM_COUNTER_ID = 105288522
 const YandexMetrika = () => {
   return (
     <YMInitializer
+      version="2"
       accounts={[YM_COUNTER_ID]}
       options={{
         ssr: true,
