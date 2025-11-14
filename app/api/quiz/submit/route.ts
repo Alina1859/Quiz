@@ -4,6 +4,7 @@ import { consumeDailyRateLimit } from '@/app/lib/rate-limit'
 import { verifySessionToken } from '@/app/lib/session-token'
 import { z } from 'zod'
 import { Prisma } from '@prisma/client'
+import { isValidPhoneNumber } from 'libphonenumber-js'
 
 const DAILY_LIMIT = 3
 const RATE_LIMIT_ROUTE = 'quiz:submit'
@@ -31,6 +32,30 @@ const fingerprintSchema = z
       .optional(),
   })
   .passthrough()
+
+const submitSchema = z.object({
+  answers: z.record(z.string()),
+  name: z.string().min(1, 'Имя обязательно для заполнения'),
+  phone: z
+    .string()
+    .min(1, 'Номер телефона обязателен для заполнения')
+    .refine(
+      (value) => {
+        if (!value || value.trim() === '') return false
+        try {
+          return isValidPhoneNumber(value)
+        } catch {
+          return false
+        }
+      },
+      { message: 'Некорректный номер телефона' }
+    ),
+  contactMethod: z.enum(['call', 'whatsapp', 'telegram'], {
+    errorMap: () => ({ message: 'Некорректный способ связи' }),
+  }),
+  recaptchaToken: z.string().min(1, 'reCAPTCHA токен обязателен'),
+  fingerprintData: fingerprintSchema.optional(),
+})
 
 async function verifyRecaptcha(
   token: string,
@@ -89,8 +114,7 @@ async function verifyRecaptcha(
 
 export async function POST(req: NextRequest) {
   try {
-    const { answers, name, phone, contactMethod, recaptchaToken, fingerprintData } =
-      await req.json()
+    const body = await req.json()
 
     const forwardedFor = req.headers.get('x-forwarded-for')
     const realIp = req.headers.get('x-real-ip')
@@ -153,30 +177,21 @@ export async function POST(req: NextRequest) {
     if (session.expiresAt.getTime() < Date.now()) {
       return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 })
     }
-    let validatedFingerprintData: any
 
-    if (fingerprintData) {
-      const parsedFingerprint = fingerprintSchema.safeParse(fingerprintData)
+    // Валидация входных данных
+    const parsedData = submitSchema.safeParse(body)
 
-      if (!parsedFingerprint.success) {
-        console.error('Invalid fingerprint data:', parsedFingerprint.error.flatten())
-        return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 })
-      }
-
-      validatedFingerprintData = parsedFingerprint.data
-    }
-    if (!recaptchaToken) {
+    if (!parsedData.success) {
+      console.error('Invalid submit data:', parsedData.error.flatten())
       return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 })
     }
+
+    const { answers, name, phone, contactMethod, recaptchaToken, fingerprintData } =
+      parsedData.data
 
     const verificationResult = await verifyRecaptcha(recaptchaToken, ip)
-    
 
     const recaptchaVerified = verificationResult.success
-
-    if (!answers || !name || !phone || !contactMethod) {
-      return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 })
-    }
 
     const questions = await prisma.question.findMany({
       orderBy: { id: 'asc' },
@@ -235,7 +250,9 @@ export async function POST(req: NextRequest) {
         phone,
         ipAddress: ip,
         userAgent: userAgent,
-        fingerprintData: validatedFingerprintData ?? null,
+        fingerprintData: fingerprintData
+          ? (fingerprintData as Prisma.InputJsonValue)
+          : Prisma.JsonNull,
         recaptchaVerified: recaptchaVerified,
         answers: {
           answers: orderedAnswers,

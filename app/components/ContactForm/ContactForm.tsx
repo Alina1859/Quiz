@@ -7,6 +7,7 @@ import OptionButton from '../Buttons/OptionButton/OptionButton'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
+import { isValidPhoneNumber } from 'react-phone-number-input'
 import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form'
 import { PhoneInput } from '@/components/ui/phone-input'
 import { Spinner } from '@/components/ui/spinner'
@@ -33,7 +34,20 @@ interface ContactFormProps {
 
 const FormSchema = z.object({
   name: z.string().min(1, { message: 'Введите ваше имя' }),
-  phone: z.string().min(1, { message: 'Введите номер телефона' }),
+  phone: z
+    .string()
+    .min(1, { message: 'Введите номер телефона' })
+    .refine(
+      (value) => {
+        if (!value || value.trim() === '') return false
+        try {
+          return isValidPhoneNumber(value)
+        } catch {
+          return false
+        }
+      },
+      { message: 'Введите корректный номер телефона' }
+    ),
   contactMethod: z.string().min(1, { message: 'Выберите способ связи' }),
 })
 
@@ -41,8 +55,8 @@ export default function ContactForm({ answers, onSubmit: onSubmitProp }: Contact
   const [isLoading, setIsLoading] = useState(false)
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
-    mode: 'onChange',
-    reValidateMode: 'onChange',
+    mode: 'onBlur',
+    reValidateMode: 'onBlur',
     defaultValues: {
       name: '',
       phone: '',
@@ -193,7 +207,7 @@ export default function ContactForm({ answers, onSubmit: onSubmitProp }: Contact
                 handleSubmit(e)
               }}
               type="submit"
-              disabled={!isFormValid || isLoading}
+              disabled={isLoading}
             >
               {isLoading ? (
                 <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
