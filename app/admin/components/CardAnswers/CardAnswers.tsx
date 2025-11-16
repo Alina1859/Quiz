@@ -37,6 +37,56 @@ const normalizeValue = (key: string, value: unknown): string => {
   if (isEmptyValue(value)) return '—'
 
   if (key === 'timestamp') {
+    // Если timestamp - это объект с данными о времени сессии
+    if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
+      const timestampObj = value as Record<string, unknown>
+      const parts: string[] = []
+      
+      if (timestampObj.sessionStart) {
+        const sessionStart = new Date(String(timestampObj.sessionStart))
+        if (!Number.isNaN(sessionStart.getTime())) {
+          parts.push(
+            `Начало: ${sessionStart.toLocaleString('ru-RU', {
+              day: '2-digit',
+              month: '2-digit',
+              year: 'numeric',
+              hour: '2-digit',
+              minute: '2-digit',
+              second: '2-digit',
+            })}`
+          )
+        }
+      }
+      
+      if (timestampObj.submitTime) {
+        const submitTime = new Date(String(timestampObj.submitTime))
+        if (!Number.isNaN(submitTime.getTime())) {
+          parts.push(
+            `Отправка: ${submitTime.toLocaleString('ru-RU', {
+              day: '2-digit',
+              month: '2-digit',
+              year: 'numeric',
+              hour: '2-digit',
+              minute: '2-digit',
+              second: '2-digit',
+            })}`
+          )
+        }
+      }
+      
+      if (timestampObj.timeDifferenceFormatted) {
+        parts.push(`Время решения: ${String(timestampObj.timeDifferenceFormatted)}`)
+      } else if (timestampObj.timeDifferenceSeconds !== undefined) {
+        const seconds = Number(timestampObj.timeDifferenceSeconds)
+        if (!Number.isNaN(seconds)) {
+          parts.push(`Время решения: ${formatTimeDifference(seconds)}`)
+        }
+      }
+      
+      return parts.length > 0 ? parts.join('\n') : '—'
+    }
+    
+    // Старый формат - просто строка с датой
     const date = new Date(String(value))
     if (!Number.isNaN(date.getTime())) {
       return date.toLocaleString('ru-RU', {
@@ -63,6 +113,22 @@ const normalizeValue = (key: string, value: unknown): string => {
   } catch {
     return String(value)
   }
+}
+
+function formatTimeDifference(seconds: number): string {
+  if (seconds < 60) {
+    return `${seconds} сек`
+  }
+  const minutes = Math.floor(seconds / 60)
+  const remainingSeconds = seconds % 60
+  if (minutes < 60) {
+    return remainingSeconds > 0 ? `${minutes} мин ${remainingSeconds} сек` : `${minutes} мин`
+  }
+  const hours = Math.floor(minutes / 60)
+  const remainingMinutes = minutes % 60
+  return remainingMinutes > 0
+    ? `${hours} ч ${remainingMinutes} мин`
+    : `${hours} ч`
 }
 
 const resolveDeviceInfoValue = (
@@ -125,11 +191,12 @@ const resolveDeviceInfoValue = (
   }
 
   if (key === 'timestamp') {
+    // Используем timestamp из fingerprintData (время сервера при сохранении)
     const timestampValue = fingerprintSource?.['timestamp']
     if (!isEmptyValue(timestampValue)) {
       return timestampValue
     }
-    // Если timestamp нет в fingerprintData, используем createdAt
+    // Fallback на createdAt если timestamp нет
     if (submission?.createdAt) {
       return submission.createdAt
     }

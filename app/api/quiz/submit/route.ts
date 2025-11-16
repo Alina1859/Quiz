@@ -9,6 +9,48 @@ import { isValidPhoneNumber } from 'libphonenumber-js'
 const DAILY_LIMIT = 8
 const RATE_LIMIT_ROUTE = 'quiz:submit'
 
+function addServerTimestamp(
+  fingerprintData: unknown,
+  sessionCreatedAt: Date
+): Prisma.InputJsonValue {
+  const submitTimestamp = new Date()
+  const sessionStartTimestamp = sessionCreatedAt
+  const timeDifferenceMs = submitTimestamp.getTime() - sessionStartTimestamp.getTime()
+  const timeDifferenceSeconds = Math.round(timeDifferenceMs / 1000)
+  
+  const timestamps = {
+    sessionStart: sessionStartTimestamp.toISOString(),
+    submitTime: submitTimestamp.toISOString(),
+    timeDifferenceSeconds,
+    timeDifferenceFormatted: formatTimeDifference(timeDifferenceSeconds),
+  }
+  
+  if (!fingerprintData || typeof fingerprintData !== 'object') {
+    return { timestamp: timestamps } as Prisma.InputJsonValue
+  }
+  
+  return {
+    ...(fingerprintData as Record<string, unknown>),
+    timestamp: timestamps,
+  } as Prisma.InputJsonValue
+}
+
+function formatTimeDifference(seconds: number): string {
+  if (seconds < 60) {
+    return `${seconds} сек`
+  }
+  const minutes = Math.floor(seconds / 60)
+  const remainingSeconds = seconds % 60
+  if (minutes < 60) {
+    return remainingSeconds > 0 ? `${minutes} мин ${remainingSeconds} сек` : `${minutes} мин`
+  }
+  const hours = Math.floor(minutes / 60)
+  const remainingMinutes = minutes % 60
+  return remainingMinutes > 0
+    ? `${hours} ч ${remainingMinutes} мин`
+    : `${hours} ч`
+}
+
 const fingerprintSchema = z
   .object({
     visitorId: z.string().min(1).max(128),
@@ -207,6 +249,22 @@ export async function POST(req: NextRequest) {
         }))
         .filter((item) => item.answer !== null)
 
+      const submitTimestamp = new Date()
+      const timeDifferenceMs = submitTimestamp.getTime() - session.createdAt.getTime()
+      const timeDifferenceSeconds = Math.round(timeDifferenceMs / 1000)
+      const timeDifferenceFormatted = formatTimeDifference(timeDifferenceSeconds)
+
+      console.log('Quiz completion time:', {
+        sessionId: session.id,
+        name,
+        phone,
+        contactMethod,
+        sessionStart: session.createdAt.toISOString(),
+        submitTime: submitTimestamp.toISOString(),
+        timeDifferenceSeconds,
+        timeDifferenceFormatted,
+      })
+
       await prisma.quizResult.create({
         data: {
           sessionId: session.id,
@@ -214,7 +272,7 @@ export async function POST(req: NextRequest) {
           ipAddress: ip,
           userAgent: userAgent,
           fingerprintData: fingerprintData
-            ? (fingerprintData as Prisma.InputJsonValue)
+            ? addServerTimestamp(fingerprintData, session.createdAt)
             : Prisma.JsonNull,
           recaptchaVerified: false,
           answers: {
@@ -274,6 +332,22 @@ export async function POST(req: NextRequest) {
       return 'Позвонить'
     }
 
+    const submitTimestamp = new Date()
+    const timeDifferenceMs = submitTimestamp.getTime() - session.createdAt.getTime()
+    const timeDifferenceSeconds = Math.round(timeDifferenceMs / 1000)
+    const timeDifferenceFormatted = formatTimeDifference(timeDifferenceSeconds)
+
+    console.log('Quiz completion time:', {
+      sessionId: session.id,
+      name,
+      phone,
+      contactMethod,
+      sessionStart: session.createdAt.toISOString(),
+      submitTime: submitTimestamp.toISOString(),
+      timeDifferenceSeconds,
+      timeDifferenceFormatted,
+    })
+
     await prisma.quizResult.create({
       data: {
         sessionId: session.id,
@@ -281,7 +355,7 @@ export async function POST(req: NextRequest) {
         ipAddress: ip,
         userAgent: userAgent,
         fingerprintData: fingerprintData
-          ? (fingerprintData as Prisma.InputJsonValue)
+          ? addServerTimestamp(fingerprintData, session.createdAt)
           : Prisma.JsonNull,
         recaptchaVerified: recaptchaVerified,
         answers: {
