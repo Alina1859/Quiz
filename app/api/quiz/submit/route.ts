@@ -17,18 +17,18 @@ function addServerTimestamp(
   const sessionStartTimestamp = sessionCreatedAt
   const timeDifferenceMs = submitTimestamp.getTime() - sessionStartTimestamp.getTime()
   const timeDifferenceSeconds = Math.round(timeDifferenceMs / 1000)
-  
+
   const timestamps = {
     sessionStart: sessionStartTimestamp.toISOString(),
     submitTime: submitTimestamp.toISOString(),
     timeDifferenceSeconds,
     timeDifferenceFormatted: formatTimeDifference(timeDifferenceSeconds),
   }
-  
+
   if (!fingerprintData || typeof fingerprintData !== 'object') {
     return { timestamp: timestamps } as Prisma.InputJsonValue
   }
-  
+
   return {
     ...(fingerprintData as Record<string, unknown>),
     timestamp: timestamps,
@@ -46,9 +46,7 @@ function formatTimeDifference(seconds: number): string {
   }
   const hours = Math.floor(minutes / 60)
   const remainingMinutes = minutes % 60
-  return remainingMinutes > 0
-    ? `${hours} ч ${remainingMinutes} мин`
-    : `${hours} ч`
+  return remainingMinutes > 0 ? `${hours} ч ${remainingMinutes} мин` : `${hours} ч`
 }
 
 const fingerprintSchema = z
@@ -384,29 +382,31 @@ export async function POST(req: NextRequest) {
       contactMethod: getContactMethod(),
     }
 
-    console.log({ crmPayload })
+    ;(async function () {
+      console.log({ crmPayload })
 
-    console.log(`https://wdg.biz-crm.ru/inserv/in.php?token=${process.env.TOKEN_CRM}`)
-    try {
-      const crmResponse = await fetch(
-        `https://wdg.biz-crm.ru/inserv/in.php?token=${process.env.TOKEN_CRM}`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(crmPayload),
+      console.log(`https://wdg.biz-crm.ru/inserv/in.php?token=${process.env.TOKEN_CRM}`)
+      try {
+        const crmResponse = await fetch(
+          `https://wdg.biz-crm.ru/inserv/in.php?token=${process.env.TOKEN_CRM}`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(crmPayload),
+          }
+        )
+
+        if (!crmResponse.ok) {
+          const crmBody = await crmResponse.text()
+          console.log('CRM Error!', { name, phone, contactMethod }, crmResponse.status, crmBody, {
+            crmPayload,
+          })
         }
-      )
-
-      if (!crmResponse.ok) {
-        const crmBody = await crmResponse.text()
-        console.log('CRM Error!', { name, phone, contactMethod }, crmResponse.status, crmBody, {
-          crmPayload,
-        })
+      } catch (crmError) {
+        console.log('CRM Error!', { name, phone, contactMethod }, { crmError }, { crmPayload })
+        console.error('Error sending lead to CRM', crmError)
       }
-    } catch (crmError) {
-      console.log('CRM Error!', { name, phone, contactMethod }, { crmError }, { crmPayload })
-      console.error('Error sending lead to CRM', crmError)
-    }
+    })()
 
     return NextResponse.json({
       message: 'Quiz submitted successfully.',
