@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import FingerprintJS from '@fingerprintjs/fingerprintjs'
 
 interface FingerprintData {
   visitorId: string
@@ -26,41 +27,7 @@ export function useFingerprint(enabled: boolean = true) {
 
     async function getDeviceInfoFullyHashed() {
       try {
-        const loadFingerprint = () => {
-          if ((window as any).__fingerprintjsLoaded) {
-            return (window as any).__fingerprintjsLoaded
-          }
-
-          const promise = new Promise((resolve, reject) => {
-            const script = document.createElement('script')
-            script.type = 'module'
-            script.textContent = `
-              import FingerprintJS from 'https://openfpcdn.io/fingerprintjs/v5';
-              window.__fingerprintjsModule = FingerprintJS;
-              window.__fingerprintjsReady = true;
-            `
-            script.onerror = () => {
-              reject(new Error('Failed to load FingerprintJS'))
-            }
-
-            const checkReady = () => {
-              if ((window as any).__fingerprintjsReady && (window as any).__fingerprintjsModule) {
-                resolve((window as any).__fingerprintjsModule)
-              } else {
-                setTimeout(checkReady, 50)
-              }
-            }
-
-            document.head.appendChild(script)
-            checkReady()
-          })
-
-          ;(window as any).__fingerprintjsLoaded = promise
-          return promise
-        }
-
-        const FingerprintJS = await loadFingerprint()
-        const fp = await (FingerprintJS as any).load()
+        const fp = await FingerprintJS.load()
         const result = await fp.get()
         console.log(result)
 
