@@ -33,6 +33,112 @@ const getComponentValue = (components: Record<string, unknown> | undefined, key:
   return candidate
 }
 
+const normalizeValue = (key: string, value: unknown): string => {
+  if (isEmptyValue(value)) return '—'
+
+  if (key === 'timestamp') {
+    const date = new Date(String(value))
+    if (!Number.isNaN(date.getTime())) {
+      return date.toLocaleString('ru-RU', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+      })
+    }
+  }
+
+  if (key === 'recaptchaVerified' && typeof value === 'boolean') {
+    return value ? 'Не бот' : 'Бот'
+  }
+
+  if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
+    return String(value)
+  }
+
+  try {
+    return JSON.stringify(value)
+  } catch {
+    return String(value)
+  }
+}
+
+const resolveDeviceInfoValue = (
+  key: string,
+  submission: CardAnswersProps['submissions'][number] | undefined,
+  fingerprintSource: Record<string, unknown> | null
+) => {
+  const componentsRaw = fingerprintSource ? fingerprintSource['components'] : undefined
+  const components = isRecord(componentsRaw)
+    ? (componentsRaw as Record<string, unknown>)
+    : undefined
+  const directValue = fingerprintSource?.[key]
+  if (!isEmptyValue(directValue)) {
+    return directValue
+  }
+
+  const componentValue = getComponentValue(components, key)
+  if (!isEmptyValue(componentValue)) {
+    return componentValue
+  }
+
+  if (key === 'userAgent') {
+    return submission?.userAgent ?? componentValue
+  }
+
+  if (key === 'visitorId' && typeof submission?.fingerprint === 'string') {
+    return submission.fingerprint
+  }
+
+  if (key === 'ipAddress') {
+    return submission?.ipAddress ?? componentValue
+  }
+
+  if (key === 'phone') {
+    return submission?.phone ?? componentValue
+  }
+
+  if (key === 'recaptchaVerified') {
+    const recaptcha = submission?.recaptchaVerified
+    if (!isEmptyValue(recaptcha)) {
+      return recaptcha as unknown
+    }
+    return componentValue
+  }
+
+  if (key === 'fingerprint') {
+    const submissionFingerprint = submission?.fingerprint
+    if (!isEmptyValue(submissionFingerprint)) {
+      return submissionFingerprint as unknown
+    }
+    const visitorId = fingerprintSource ? fingerprintSource['visitorId'] : undefined
+    if (!isEmptyValue(visitorId)) {
+      return visitorId
+    }
+    // Если fingerprintSource существует, возвращаем его как fingerprint
+    if (fingerprintSource) {
+      return fingerprintSource
+    }
+    return componentValue
+  }
+
+  if (key === 'timestamp') {
+    const timestampValue = fingerprintSource?.['timestamp']
+    if (!isEmptyValue(timestampValue)) {
+      return timestampValue
+    }
+    // Если timestamp нет в fingerprintData, используем createdAt
+    if (submission?.createdAt) {
+      return submission.createdAt
+    }
+    return componentValue
+  }
+
+  return componentValue
+}
+
 const getSessionInfo = (submission: CardAnswersProps['submissions'][number]) => {
   const fingerprintData = isRecord(submission?.fingerprintData)
     ? (submission.fingerprintData as Record<string, unknown>)
@@ -42,62 +148,35 @@ const getSessionInfo = (submission: CardAnswersProps['submissions'][number]) => 
     : null
 
   const fingerprintSource = fingerprintData ?? fingerprint
-  const componentsRaw = fingerprintSource ? fingerprintSource['components'] : undefined
-  const components = isRecord(componentsRaw)
-    ? (componentsRaw as Record<string, unknown>)
-    : undefined
 
-  const getValue = (key: string) => {
-    const directValue = fingerprintSource?.[key]
-    if (!isEmptyValue(directValue)) {
-      return directValue
-    }
-    const componentValue = getComponentValue(components, key)
-    if (!isEmptyValue(componentValue)) {
-      return componentValue
-    }
-    if (key === 'userAgent') {
-      return submission?.userAgent ?? componentValue
-    }
-    if (key === 'ipAddress') {
-      return submission?.ipAddress ?? componentValue
-    }
-    if (key === 'visitorId' && typeof submission?.fingerprint === 'string') {
-      return submission.fingerprint
-    }
-    return componentValue
-  }
-
-  const visitorId = getValue('visitorId')
-  const userAgent = getValue('userAgent')
-  const ipAddress = getValue('ipAddress')
-  const platform = getValue('platform')
-  const language = getValue('language')
-  const timezone = getValue('timezone')
-  const screen = getValue('screen')
+  const fields = [
+    { key: 'visitorId', label: 'Visitor ID' },
+    { key: 'userAgent', label: 'User Agent' },
+    { key: 'language', label: 'Язык' },
+    { key: 'platform', label: 'Платформа' },
+    { key: 'hardwareConcurrency', label: 'Потоки CPU' },
+    { key: 'screen', label: 'Экран' },
+    { key: 'timezone', label: 'Часовой пояс' },
+    { key: 'gpuVendor', label: 'GPU Vendor' },
+    { key: 'gpuRenderer', label: 'GPU Renderer' },
+    { key: 'ipAddress', label: 'IP адрес' },
+    { key: 'phone', label: 'Телефон' },
+    { key: 'recaptchaVerified', label: 'reCAPTCHA' },
+    { key: 'fingerprint', label: 'Fingerprint' },
+    { key: 'timestamp', label: 'Последнее обновление' },
+  ]
 
   const infoParts: string[] = []
-  if (!isEmptyValue(ipAddress)) {
-    infoParts.push(`IP: ${String(ipAddress)}`)
-  }
-  if (!isEmptyValue(visitorId)) {
-    infoParts.push(`Visitor ID: ${String(visitorId)}`)
-  }
-  if (!isEmptyValue(platform)) {
-    infoParts.push(`Платформа: ${String(platform)}`)
-  }
-  if (!isEmptyValue(language)) {
-    infoParts.push(`Язык: ${String(language)}`)
-  }
-  if (!isEmptyValue(timezone)) {
-    infoParts.push(`Часовой пояс: ${String(timezone)}`)
-  }
-  if (!isEmptyValue(screen)) {
-    infoParts.push(`Экран: ${String(screen)}`)
-  }
-  if (!isEmptyValue(userAgent)) {
-    infoParts.push(`UA: ${String(userAgent)}`)
-  }
+
+  fields.forEach((field) => {
+    const value = resolveDeviceInfoValue(field.key, submission, fingerprintSource)
+    if (!isEmptyValue(value)) {
+      const normalizedValue = normalizeValue(field.key, value)
+      if (normalizedValue !== '—') {
+        infoParts.push(`${field.label}: ${normalizedValue}`)
+      }
+    }
+  })
 
   return infoParts.length > 0 ? infoParts.join('\n') : 'Нет данных'
 }
