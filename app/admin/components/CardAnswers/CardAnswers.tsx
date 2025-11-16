@@ -1,20 +1,16 @@
 'use client'
 
-import { useState } from 'react'
-
 import { AdminTableCell } from '../TableCell/TableCell'
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Table, TableBody, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import type { CardAnswersProps } from '@/types/admin'
+import type { CardAnswersProps, RecaptchaFilterValue } from '@/types/admin'
 
-const FILTERS = [
+const FILTERS: ReadonlyArray<{ value: RecaptchaFilterValue; label: string }> = [
   { value: 'all', label: 'Все заявки' },
   { value: 'human', label: 'Не бот' },
   { value: 'bot', label: 'Бот' },
-] as const
-
-type FilterValue = (typeof FILTERS)[number]['value']
+]
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null
@@ -23,6 +19,19 @@ const isEmptyValue = (value: unknown): boolean => {
   if (value === null || value === undefined) return true
   if (typeof value === 'string' && value.trim() === '') return true
   return false
+}
+
+const extractSearchableString = (value: unknown): string | null => {
+  if (typeof value === 'string') {
+    return value
+  }
+  if (typeof value === 'number' || typeof value === 'boolean') {
+    return String(value)
+  }
+  if (isRecord(value) && typeof value.value === 'string') {
+    return value.value
+  }
+  return null
 }
 
 const getComponentValue = (components: Record<string, unknown> | undefined, key: string) => {
@@ -249,17 +258,46 @@ const getSessionInfo = (submission: CardAnswersProps['submissions'][number]) => 
   return infoParts.length > 0 ? infoParts.join('\n') : 'Нет данных'
 }
 
-const searchInSubmission = (submission: CardAnswersProps['submissions'][number], searchQuery: string): boolean => {
+export const searchInSubmission = (
+  submission: CardAnswersProps['submissions'][number],
+  searchQuery: string
+): boolean => {
   if (!searchQuery.trim()) return true
 
   const query = searchQuery.toLowerCase().trim()
 
   // Поиск по имени
-  const name = submission.name || submission.answers?.name || ''
-  if (name.toLowerCase().includes(query)) return true
+  const nameCandidates: unknown[] = [submission.name, submission.answers?.name]
+  for (const candidate of nameCandidates) {
+    const normalized = extractSearchableString(candidate)
+    if (normalized && normalized.toLowerCase().includes(query)) {
+      return true
+    }
+  }
+
+  // Поиск по контактному методу
+  const contactMethod = extractSearchableString(submission.answers?.contactMethod)
+  if (contactMethod && contactMethod.toLowerCase().includes(query)) {
+    return true
+  }
+
+  // Поиск по ответам на вопросы
+  const answersList = submission.answers?.answers
+  if (Array.isArray(answersList)) {
+    for (const answerItem of answersList) {
+      const answerValue = extractSearchableString(answerItem.answer)
+      if (answerValue && answerValue.toLowerCase().includes(query)) {
+        return true
+      }
+      const questionValue = extractSearchableString(answerItem.questionText)
+      if (questionValue && questionValue.toLowerCase().includes(query)) {
+        return true
+      }
+    }
+  }
 
   // Поиск по телефону
-  if (submission.phone.toLowerCase().includes(query)) return true
+  if (submission.phone && submission.phone.toLowerCase().includes(query)) return true
 
   // Поиск по IP адресу
   if (submission.ipAddress && submission.ipAddress.toLowerCase().includes(query)) return true
@@ -314,34 +352,30 @@ const searchInSubmission = (submission: CardAnswersProps['submissions'][number],
   return false
 }
 
-export function CardAnswers({ isLoadingSubmissions, submissions, totalSubmissions }: CardAnswersProps) {
-  const [recaptchaFilter, setRecaptchaFilter] = useState<FilterValue>('all')
-  const [searchQuery, setSearchQuery] = useState('')
-
-  const filteredByRecaptcha =
-    recaptchaFilter === 'human'
-      ? submissions.filter((row) => row.recaptchaVerified === true)
-      : recaptchaFilter === 'bot'
-        ? submissions.filter((row) => row.recaptchaVerified === false)
-        : submissions
-
-  const filteredSubmissions = filteredByRecaptcha.filter((submission) =>
-    searchInSubmission(submission, searchQuery)
-  )
-
+export function CardAnswers({
+  isLoadingSubmissions,
+  submissions,
+  totalSubmissions,
+  overallTotalSubmissions,
+  searchQuery,
+  onSearchQueryChange,
+  recaptchaFilter,
+  onRecaptchaFilterChange,
+}: CardAnswersProps) {
   return (
     <Card className="bg-muted text-card-foreground flex flex-col gap-4 rounded-lg border p-1 py-0">
       <div className="flex flex-col gap-3 px-2 pt-3">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div className="text-xs text-muted-foreground">
-            Показано: {filteredSubmissions.length} из {submissions.length} • Всего: {totalSubmissions}
+            Показано на странице: {submissions.length} • Найдено: {totalSubmissions} • Всего:{' '}
+            {overallTotalSubmissions}
           </div>
           <label className="flex items-center gap-2 text-xs text-muted-foreground">
             <span className="uppercase tracking-wide text-[10px] font-semibold">reCAPTCHA</span>
             <select
               className="text-foreground bg-background border border-border rounded px-2 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-primary"
               value={recaptchaFilter}
-              onChange={(event) => setRecaptchaFilter(event.target.value as FilterValue)}
+              onChange={(event) => onRecaptchaFilterChange(event.target.value as RecaptchaFilterValue)}
             >
               {FILTERS.map((filter) => (
                 <option key={filter.value} value={filter.value}>
@@ -356,7 +390,7 @@ export function CardAnswers({ isLoadingSubmissions, submissions, totalSubmission
             type="text"
             placeholder="Поиск по имени, телефону, IP, User-Agent и данным сессии..."
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={(e) => onSearchQueryChange(e.target.value)}
             className="text-sm bg-background border-border"
           />
         </div>
@@ -403,7 +437,7 @@ export function CardAnswers({ isLoadingSubmissions, submissions, totalSubmission
                   Загрузка данных...
                 </AdminTableCell>
               </TableRow>
-            ) : submissions.length === 0 ? (
+            ) : overallTotalSubmissions === 0 ? (
               <TableRow>
                 <AdminTableCell
                   bordered={false}
@@ -414,7 +448,7 @@ export function CardAnswers({ isLoadingSubmissions, submissions, totalSubmission
                   Нет заявок
                 </AdminTableCell>
               </TableRow>
-            ) : filteredSubmissions.length === 0 ? (
+            ) : totalSubmissions === 0 ? (
               <TableRow>
                 <AdminTableCell
                   bordered={false}
@@ -427,8 +461,19 @@ export function CardAnswers({ isLoadingSubmissions, submissions, totalSubmission
                     : 'Нет заявок для выбранного фильтра'}
                 </AdminTableCell>
               </TableRow>
+            ) : submissions.length === 0 ? (
+              <TableRow>
+                <AdminTableCell
+                  bordered={false}
+                  nowrap={false}
+                  colSpan={8}
+                  className="text-center py-8"
+                >
+                  Нет заявок на этой странице
+                </AdminTableCell>
+              </TableRow>
             ) : (
-              filteredSubmissions.map((row) => {
+              submissions.map((row) => {
                 const date = new Date(row.createdAt).toLocaleString('ru-RU', {
                   day: '2-digit',
                   month: '2-digit',

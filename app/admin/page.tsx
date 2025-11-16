@@ -6,12 +6,12 @@ import { Field, FieldContent, FieldError, FieldGroup } from '@/components/ui/fie
 import { Input } from '@/components/ui/input'
 import MainButton from '../components/Buttons/MainButton/MainButton'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { CardAnswers } from './components/CardAnswers/CardAnswers'
+import { CardAnswers, searchInSubmission } from './components/CardAnswers/CardAnswers'
 import { CardData } from './components/CardData/CardData'
 import { CardEditQuiz } from './components/CardEditQuiz/CardEditQuiz'
 import { AdminPagination } from './components/Pagination/Pagination'
 import { CardApplication } from './components/CardApplication/CardApplication'
-import type { Submission } from '@/types/admin'
+import type { Submission, RecaptchaFilterValue } from '@/types/admin'
 
 const PAGE_SIZE = 20
 
@@ -24,18 +24,39 @@ export default function AdminPage() {
   const [allSubmissions, setAllSubmissions] = useState<Submission[]>([])
   const [isLoadingSubmissions, setIsLoadingSubmissions] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
+  const [recaptchaFilter, setRecaptchaFilter] = useState<RecaptchaFilterValue>('all')
+  const [searchQuery, setSearchQuery] = useState('')
 
   const totalSubmissions = allSubmissions.length
-  const totalPages = totalSubmissions === 0 ? 1 : Math.ceil(totalSubmissions / PAGE_SIZE)
+
+  const filteredSubmissions = useMemo(() => {
+    const query = searchQuery.trim()
+
+    return allSubmissions.filter((submission) => {
+      if (recaptchaFilter === 'human' && submission.recaptchaVerified !== true) {
+        return false
+      }
+
+      if (recaptchaFilter === 'bot' && submission.recaptchaVerified !== false) {
+        return false
+      }
+
+      return !(query && !searchInSubmission(submission, query))
+    })
+  }, [allSubmissions, recaptchaFilter, searchQuery])
+
+  const totalFilteredSubmissions = filteredSubmissions.length
+  const totalPages =
+    totalFilteredSubmissions === 0 ? 1 : Math.ceil(totalFilteredSubmissions / PAGE_SIZE)
 
   const paginatedSubmissions = useMemo(() => {
-    if (totalSubmissions === 0) {
+    if (totalFilteredSubmissions === 0) {
       return []
     }
     const startIndex = (currentPage - 1) * PAGE_SIZE
     const endIndex = startIndex + PAGE_SIZE
-    return allSubmissions.slice(startIndex, endIndex)
-  }, [allSubmissions, currentPage, totalSubmissions])
+    return filteredSubmissions.slice(startIndex, endIndex)
+  }, [filteredSubmissions, currentPage, totalFilteredSubmissions])
 
   useEffect(() => {
     checkAuthentication()
@@ -52,6 +73,10 @@ export default function AdminPage() {
       setCurrentPage(totalPages)
     }
   }, [currentPage, totalPages])
+
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [recaptchaFilter, searchQuery])
 
   const checkAuthentication = async () => {
     try {
@@ -173,14 +198,19 @@ export default function AdminPage() {
               <CardAnswers
                 isLoadingSubmissions={isLoadingSubmissions}
                 submissions={paginatedSubmissions}
-                totalSubmissions={totalSubmissions}
+                totalSubmissions={totalFilteredSubmissions}
+                overallTotalSubmissions={totalSubmissions}
+                searchQuery={searchQuery}
+                onSearchQueryChange={setSearchQuery}
+                recaptchaFilter={recaptchaFilter}
+                onRecaptchaFilterChange={setRecaptchaFilter}
               />
               <div className="mt-6">
                 <AdminPagination
                   currentPage={currentPage}
                   totalPages={totalPages}
                   onPageChange={setCurrentPage}
-                  isDisabled={totalSubmissions === 0}
+                  isDisabled={totalFilteredSubmissions === 0}
                 />
               </div>
             </TabsContent>
@@ -190,13 +220,16 @@ export default function AdminPage() {
               </div>
             </TabsContent>
             <TabsContent value="database">
-              <CardData submissions={paginatedSubmissions} isLoadingSubmissions={isLoadingSubmissions} />
+              <CardData
+                submissions={paginatedSubmissions}
+                isLoadingSubmissions={isLoadingSubmissions}
+              />
               <div className="mt-6">
                 <AdminPagination
                   currentPage={currentPage}
                   totalPages={totalPages}
                   onPageChange={setCurrentPage}
-                  isDisabled={totalSubmissions === 0}
+                  isDisabled={totalFilteredSubmissions === 0}
                 />
               </div>
             </TabsContent>

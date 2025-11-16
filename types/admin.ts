@@ -20,10 +20,17 @@ export interface Submission {
   } | null
 }
 
+export type RecaptchaFilterValue = 'all' | 'human' | 'bot'
+
 export interface CardAnswersProps {
   isLoadingSubmissions: boolean
   submissions: Submission[]
   totalSubmissions: number
+  overallTotalSubmissions: number
+  searchQuery: string
+  onSearchQueryChange: (value: string) => void
+  recaptchaFilter: RecaptchaFilterValue
+  onRecaptchaFilterChange: (value: RecaptchaFilterValue) => void
 }
 
 export interface CardDataProps {
