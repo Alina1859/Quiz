@@ -23,6 +23,7 @@ export interface Submission {
 export interface CardAnswersProps {
   isLoadingSubmissions: boolean
   submissions: Submission[]
+  totalSubmissions: number
 }
 
 export interface CardDataProps {

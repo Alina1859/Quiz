@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import './page.css'
 import { Field, FieldContent, FieldError, FieldGroup } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
@@ -13,17 +13,29 @@ import { AdminPagination } from './components/Pagination/Pagination'
 import { CardApplication } from './components/CardApplication/CardApplication'
 import type { Submission } from '@/types/admin'
 
+const PAGE_SIZE = 20
+
 export default function AdminPage() {
   const [token, setToken] = useState('')
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null)
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [submissions, setSubmissions] = useState<Submission[]>([])
+  const [allSubmissions, setAllSubmissions] = useState<Submission[]>([])
   const [isLoadingSubmissions, setIsLoadingSubmissions] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
-  const [totalPages, setTotalPages] = useState(1)
-  const [totalSubmissions, setTotalSubmissions] = useState(0)
+
+  const totalSubmissions = allSubmissions.length
+  const totalPages = totalSubmissions === 0 ? 1 : Math.ceil(totalSubmissions / PAGE_SIZE)
+
+  const paginatedSubmissions = useMemo(() => {
+    if (totalSubmissions === 0) {
+      return []
+    }
+    const startIndex = (currentPage - 1) * PAGE_SIZE
+    const endIndex = startIndex + PAGE_SIZE
+    return allSubmissions.slice(startIndex, endIndex)
+  }, [allSubmissions, currentPage, totalSubmissions])
 
   useEffect(() => {
     checkAuthentication()
@@ -31,9 +43,15 @@ export default function AdminPage() {
 
   useEffect(() => {
     if (isAuthenticated) {
-      fetchSubmissions(currentPage)
+      fetchSubmissions()
     }
-  }, [isAuthenticated, currentPage])
+  }, [isAuthenticated])
+
+  useEffect(() => {
+    if (currentPage > totalPages) {
+      setCurrentPage(totalPages)
+    }
+  }, [currentPage, totalPages])
 
   const checkAuthentication = async () => {
     try {
@@ -47,18 +65,15 @@ export default function AdminPage() {
     }
   }
 
-  const fetchSubmissions = async (page: number = 1) => {
+  const fetchSubmissions = async () => {
     setIsLoadingSubmissions(true)
     try {
-      const response = await fetch(`/api/admin/submissions?page=${page}`)
+      const response = await fetch('/api/admin/submissions')
       const data = await response.json()
 
-      if (response.ok && data.submissions) {
-        setSubmissions(data.submissions)
-        if (data.pagination) {
-          setTotalPages(data.pagination.totalPages)
-          setTotalSubmissions(data.pagination.total)
-        }
+      if (response.ok && Array.isArray(data.submissions)) {
+        setAllSubmissions(data.submissions)
+        setCurrentPage(1)
       } else {
         console.error('Error fetching submissions:', data.error)
       }
@@ -88,7 +103,7 @@ export default function AdminPage() {
       if (response.ok && data.success) {
         setIsAuthenticated(true)
         setToken('')
-        await fetchSubmissions(1)
+        await fetchSubmissions()
       } else {
         setError(data.error || 'Неверный токен')
       }
@@ -155,13 +170,17 @@ export default function AdminPage() {
               <TabsTrigger value="database">Data</TabsTrigger>
             </TabsList>
             <TabsContent value="answers">
-              <CardAnswers isLoadingSubmissions={isLoadingSubmissions} submissions={submissions} />
+              <CardAnswers
+                isLoadingSubmissions={isLoadingSubmissions}
+                submissions={paginatedSubmissions}
+                totalSubmissions={totalSubmissions}
+              />
               <div className="mt-6">
                 <AdminPagination
                   currentPage={currentPage}
                   totalPages={totalPages}
                   onPageChange={setCurrentPage}
-                  isDisabled={submissions.length === 0}
+                  isDisabled={totalSubmissions === 0}
                 />
               </div>
             </TabsContent>
@@ -171,13 +190,13 @@ export default function AdminPage() {
               </div>
             </TabsContent>
             <TabsContent value="database">
-              <CardData submissions={submissions} isLoadingSubmissions={isLoadingSubmissions} />
+              <CardData submissions={paginatedSubmissions} isLoadingSubmissions={isLoadingSubmissions} />
               <div className="mt-6">
                 <AdminPagination
                   currentPage={currentPage}
                   totalPages={totalPages}
                   onPageChange={setCurrentPage}
-                  isDisabled={submissions.length === 0}
+                  isDisabled={totalSubmissions === 0}
                 />
               </div>
             </TabsContent>

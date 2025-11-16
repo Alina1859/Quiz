@@ -314,7 +314,7 @@ const searchInSubmission = (submission: CardAnswersProps['submissions'][number],
   return false
 }
 
-export function CardAnswers({ isLoadingSubmissions, submissions }: CardAnswersProps) {
+export function CardAnswers({ isLoadingSubmissions, submissions, totalSubmissions }: CardAnswersProps) {
   const [recaptchaFilter, setRecaptchaFilter] = useState<FilterValue>('all')
   const [searchQuery, setSearchQuery] = useState('')
 
@@ -334,7 +334,7 @@ export function CardAnswers({ isLoadingSubmissions, submissions }: CardAnswersPr
       <div className="flex flex-col gap-3 px-2 pt-3">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div className="text-xs text-muted-foreground">
-            Показано: {filteredSubmissions.length} из {submissions.length}
+            Показано: {filteredSubmissions.length} из {submissions.length} • Всего: {totalSubmissions}
           </div>
           <label className="flex items-center gap-2 text-xs text-muted-foreground">
             <span className="uppercase tracking-wide text-[10px] font-semibold">reCAPTCHA</span>
