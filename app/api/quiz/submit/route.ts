@@ -130,6 +130,7 @@ export async function POST(req: NextRequest) {
     const parsedData = submitSchema.safeParse(body)
 
     if (!parsedData.success) {
+      console.log({ body })
       console.error('Invalid submit data:', parsedData.error.flatten())
       return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 })
     }
@@ -311,26 +312,27 @@ export async function POST(req: NextRequest) {
 
     console.log({ crmPayload })
 
-    try {
-      const crmResponse = await fetch(
-        `https://wdg.biz-crm.ru/inserv/in.php?token=${process.env.TOKEN_CRM}`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(crmPayload),
-        }
-      )
-
-      if (!crmResponse.ok) {
-        const crmBody = await crmResponse.text()
-        console.log('CRM Error!', { name, phone, contactMethod }, crmResponse.status, crmBody, {
-          crmPayload,
-        })
-      }
-    } catch (crmError) {
-      console.log('CRM Error!', { name, phone, contactMethod }, { crmError }, { crmPayload })
-      console.error('Error sending lead to CRM', crmError)
-    }
+    console.log(`https://wdg.biz-crm.ru/inserv/in.php?token=${process.env.TOKEN_CRM}`)
+    // try {
+    //   const crmResponse = await fetch(
+    //     `https://wdg.biz-crm.ru/inserv/in.php?token=${process.env.TOKEN_CRM}`,
+    //     {
+    //       method: 'POST',
+    //       headers: { 'Content-Type': 'application/json' },
+    //       body: JSON.stringify(crmPayload),
+    //     }
+    //   )
+    //
+    //   if (!crmResponse.ok) {
+    //     const crmBody = await crmResponse.text()
+    //     console.log('CRM Error!', { name, phone, contactMethod }, crmResponse.status, crmBody, {
+    //       crmPayload,
+    //     })
+    //   }
+    // } catch (crmError) {
+    //   console.log('CRM Error!', { name, phone, contactMethod }, { crmError }, { crmPayload })
+    //   console.error('Error sending lead to CRM', crmError)
+    // }
 
     return NextResponse.json({
       message: 'Quiz submitted successfully.',
