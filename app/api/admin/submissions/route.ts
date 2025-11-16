@@ -16,7 +16,7 @@ export async function GET(req: NextRequest) {
 
     const { searchParams } = new URL(req.url)
     const page = parseInt(searchParams.get('page') || '1', 10)
-    const limit = 5
+    const limit = 20
     const skip = (page - 1) * limit
 
     const total = await prisma.quizResult.count()

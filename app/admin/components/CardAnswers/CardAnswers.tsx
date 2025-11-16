@@ -15,6 +15,93 @@ const FILTERS = [
 
 type FilterValue = (typeof FILTERS)[number]['value']
 
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null
+
+const isEmptyValue = (value: unknown): boolean => {
+  if (value === null || value === undefined) return true
+  if (typeof value === 'string' && value.trim() === '') return true
+  return false
+}
+
+const getComponentValue = (components: Record<string, unknown> | undefined, key: string) => {
+  if (!components) return undefined
+  const candidate = components[key]
+  if (isRecord(candidate) && 'value' in candidate) {
+    return (candidate as Record<string, unknown>).value
+  }
+  return candidate
+}
+
+const getSessionInfo = (submission: CardAnswersProps['submissions'][number]) => {
+  const fingerprintData = isRecord(submission?.fingerprintData)
+    ? (submission.fingerprintData as Record<string, unknown>)
+    : null
+  const fingerprint = isRecord(submission?.fingerprint)
+    ? (submission.fingerprint as Record<string, unknown>)
+    : null
+
+  const fingerprintSource = fingerprintData ?? fingerprint
+  const componentsRaw = fingerprintSource ? fingerprintSource['components'] : undefined
+  const components = isRecord(componentsRaw)
+    ? (componentsRaw as Record<string, unknown>)
+    : undefined
+
+  const getValue = (key: string) => {
+    const directValue = fingerprintSource?.[key]
+    if (!isEmptyValue(directValue)) {
+      return directValue
+    }
+    const componentValue = getComponentValue(components, key)
+    if (!isEmptyValue(componentValue)) {
+      return componentValue
+    }
+    if (key === 'userAgent') {
+      return submission?.userAgent ?? componentValue
+    }
+    if (key === 'ipAddress') {
+      return submission?.ipAddress ?? componentValue
+    }
+    if (key === 'visitorId' && typeof submission?.fingerprint === 'string') {
+      return submission.fingerprint
+    }
+    return componentValue
+  }
+
+  const visitorId = getValue('visitorId')
+  const userAgent = getValue('userAgent')
+  const ipAddress = getValue('ipAddress')
+  const platform = getValue('platform')
+  const language = getValue('language')
+  const timezone = getValue('timezone')
+  const screen = getValue('screen')
+
+  const infoParts: string[] = []
+  if (!isEmptyValue(ipAddress)) {
+    infoParts.push(`IP: ${String(ipAddress)}`)
+  }
+  if (!isEmptyValue(visitorId)) {
+    infoParts.push(`Visitor ID: ${String(visitorId)}`)
+  }
+  if (!isEmptyValue(platform)) {
+    infoParts.push(`Платформа: ${String(platform)}`)
+  }
+  if (!isEmptyValue(language)) {
+    infoParts.push(`Язык: ${String(language)}`)
+  }
+  if (!isEmptyValue(timezone)) {
+    infoParts.push(`Часовой пояс: ${String(timezone)}`)
+  }
+  if (!isEmptyValue(screen)) {
+    infoParts.push(`Экран: ${String(screen)}`)
+  }
+  if (!isEmptyValue(userAgent)) {
+    infoParts.push(`UA: ${String(userAgent)}`)
+  }
+
+  return infoParts.length > 0 ? infoParts.join('\n') : 'Нет данных'
+}
+
 export function CardAnswers({ isLoadingSubmissions, submissions }: CardAnswersProps) {
   const [recaptchaFilter, setRecaptchaFilter] = useState<FilterValue>('all')
 
@@ -68,6 +155,9 @@ export function CardAnswers({ isLoadingSubmissions, submissions }: CardAnswersPr
               <TableHead className="h-10 px-2 text-left align-middle whitespace-nowrap border-r border-border text-muted-foreground text-xs font-medium tracking-wider uppercase">
                 reCAPTCHA
               </TableHead>
+              <TableHead className="h-10 px-2 text-left align-middle whitespace-nowrap border-r border-border text-muted-foreground text-xs font-medium tracking-wider uppercase">
+                Данные сессии
+              </TableHead>
               <TableHead className="h-10 px-2 text-left align-middle whitespace-nowrap text-muted-foreground text-xs font-medium tracking-wider uppercase">
                 Ответы
               </TableHead>
@@ -79,7 +169,7 @@ export function CardAnswers({ isLoadingSubmissions, submissions }: CardAnswersPr
                 <AdminTableCell
                   bordered={false}
                   nowrap={false}
-                  colSpan={10}
+                  colSpan={8}
                   className="text-center py-8"
                 >
                   Загрузка данных...
@@ -90,7 +180,7 @@ export function CardAnswers({ isLoadingSubmissions, submissions }: CardAnswersPr
                 <AdminTableCell
                   bordered={false}
                   nowrap={false}
-                  colSpan={10}
+                  colSpan={8}
                   className="text-center py-8"
                 >
                   Нет заявок
@@ -101,7 +191,7 @@ export function CardAnswers({ isLoadingSubmissions, submissions }: CardAnswersPr
                 <AdminTableCell
                   bordered={false}
                   nowrap={false}
-                  colSpan={10}
+                  colSpan={8}
                   className="text-center py-8"
                 >
                   Нет заявок для выбранного фильтра
@@ -147,6 +237,11 @@ export function CardAnswers({ isLoadingSubmissions, submissions }: CardAnswersPr
                       ) : (
                         <span className="text-red-600 font-medium">Бот</span>
                       )}
+                    </AdminTableCell>
+                    <AdminTableCell nowrap={false}>
+                      <div className="text-xs text-muted-foreground whitespace-pre-wrap break-words max-w-xs">
+                        {getSessionInfo(row)}
+                      </div>
                     </AdminTableCell>
                     <AdminTableCell bordered={false} nowrap={false}>
                       {row.answers ? (
