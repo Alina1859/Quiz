@@ -6,7 +6,7 @@ import { z } from 'zod'
 import { Prisma } from '@prisma/client'
 import { isValidPhoneNumber } from 'libphonenumber-js'
 
-const DAILY_LIMIT = 8
+const DAILY_LIMIT = 3
 const RATE_LIMIT_ROUTE = 'quiz:submit'
 
 function addServerTimestamp(
@@ -286,7 +286,8 @@ export async function POST(req: NextRequest) {
         data: { status: 'completed' },
       })
 
-      await new Promise((resolve) => setTimeout(resolve, 3000))
+      const randomDelay = Math.floor(Math.random() * (8000 - 2000 + 1)) + 2000
+      await new Promise((resolve) => setTimeout(resolve, randomDelay))
 
       return NextResponse.json({
         message: 'Quiz submitted successfully.',

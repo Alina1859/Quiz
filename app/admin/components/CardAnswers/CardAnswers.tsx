@@ -4,6 +4,7 @@ import { useState } from 'react'
 
 import { AdminTableCell } from '../TableCell/TableCell'
 import { Card } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
 import { Table, TableBody, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import type { CardAnswersProps } from '@/types/admin'
 
@@ -248,36 +249,117 @@ const getSessionInfo = (submission: CardAnswersProps['submissions'][number]) => 
   return infoParts.length > 0 ? infoParts.join('\n') : 'Нет данных'
 }
 
+const searchInSubmission = (submission: CardAnswersProps['submissions'][number], searchQuery: string): boolean => {
+  if (!searchQuery.trim()) return true
+
+  const query = searchQuery.toLowerCase().trim()
+
+  // Поиск по имени
+  const name = submission.name || submission.answers?.name || ''
+  if (name.toLowerCase().includes(query)) return true
+
+  // Поиск по телефону
+  if (submission.phone.toLowerCase().includes(query)) return true
+
+  // Поиск по IP адресу
+  if (submission.ipAddress && submission.ipAddress.toLowerCase().includes(query)) return true
+
+  // Поиск по User Agent
+  if (submission.userAgent && submission.userAgent.toLowerCase().includes(query)) return true
+
+  // Поиск по данным сессии (fingerprintData и fingerprint)
+  const fingerprintData = isRecord(submission?.fingerprintData)
+    ? (submission.fingerprintData as Record<string, unknown>)
+    : null
+  const fingerprint = isRecord(submission?.fingerprint)
+    ? (submission.fingerprint as Record<string, unknown>)
+    : null
+
+  const fingerprintSource = fingerprintData ?? fingerprint
+
+  if (fingerprintSource) {
+    // Рекурсивный поиск по всем полям fingerprintData
+    const searchInObject = (obj: unknown): boolean => {
+      if (typeof obj === 'string' && obj.toLowerCase().includes(query)) {
+        return true
+      }
+      if (typeof obj === 'number' && String(obj).includes(query)) {
+        return true
+      }
+      if (isRecord(obj)) {
+        for (const value of Object.values(obj)) {
+          if (searchInObject(value)) {
+            return true
+          }
+        }
+      }
+      if (Array.isArray(obj)) {
+        for (const item of obj) {
+          if (searchInObject(item)) {
+            return true
+          }
+        }
+      }
+      return false
+    }
+
+    if (searchInObject(fingerprintSource)) return true
+  }
+
+  // Поиск по Visitor ID (если это строка)
+  if (typeof submission.fingerprint === 'string' && submission.fingerprint.toLowerCase().includes(query)) {
+    return true
+  }
+
+  return false
+}
+
 export function CardAnswers({ isLoadingSubmissions, submissions }: CardAnswersProps) {
   const [recaptchaFilter, setRecaptchaFilter] = useState<FilterValue>('all')
+  const [searchQuery, setSearchQuery] = useState('')
 
-  const filteredSubmissions =
+  const filteredByRecaptcha =
     recaptchaFilter === 'human'
       ? submissions.filter((row) => row.recaptchaVerified === true)
       : recaptchaFilter === 'bot'
         ? submissions.filter((row) => row.recaptchaVerified === false)
         : submissions
 
+  const filteredSubmissions = filteredByRecaptcha.filter((submission) =>
+    searchInSubmission(submission, searchQuery)
+  )
+
   return (
     <Card className="bg-muted text-card-foreground flex flex-col gap-4 rounded-lg border p-1 py-0">
-      <div className="flex flex-wrap items-center justify-between gap-2 px-2 pt-3">
-        <div className="text-xs text-muted-foreground">
-          Показано: {filteredSubmissions.length} из {submissions.length}
+      <div className="flex flex-col gap-3 px-2 pt-3">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div className="text-xs text-muted-foreground">
+            Показано: {filteredSubmissions.length} из {submissions.length}
+          </div>
+          <label className="flex items-center gap-2 text-xs text-muted-foreground">
+            <span className="uppercase tracking-wide text-[10px] font-semibold">reCAPTCHA</span>
+            <select
+              className="text-foreground bg-background border border-border rounded px-2 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-primary"
+              value={recaptchaFilter}
+              onChange={(event) => setRecaptchaFilter(event.target.value as FilterValue)}
+            >
+              {FILTERS.map((filter) => (
+                <option key={filter.value} value={filter.value}>
+                  {filter.label}
+                </option>
+              ))}
+            </select>
+          </label>
         </div>
-        <label className="flex items-center gap-2 text-xs text-muted-foreground">
-          <span className="uppercase tracking-wide text-[10px] font-semibold">reCAPTCHA</span>
-          <select
-            className="text-foreground bg-background border border-border rounded px-2 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-primary"
-            value={recaptchaFilter}
-            onChange={(event) => setRecaptchaFilter(event.target.value as FilterValue)}
-          >
-            {FILTERS.map((filter) => (
-              <option key={filter.value} value={filter.value}>
-                {filter.label}
-              </option>
-            ))}
-          </select>
-        </label>
+        <div className="flex items-center gap-2">
+          <Input
+            type="text"
+            placeholder="Поиск по имени, телефону, IP, User-Agent и данным сессии..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="text-sm bg-background border-border"
+          />
+        </div>
       </div>
       <div className="admin-table-wrapper">
         <Table>
@@ -340,7 +422,9 @@ export function CardAnswers({ isLoadingSubmissions, submissions }: CardAnswersPr
                   colSpan={8}
                   className="text-center py-8"
                 >
-                  Нет заявок для выбранного фильтра
+                  {searchQuery.trim()
+                    ? 'Нет заявок, соответствующих поисковому запросу'
+                    : 'Нет заявок для выбранного фильтра'}
                 </AdminTableCell>
               </TableRow>
             ) : (
