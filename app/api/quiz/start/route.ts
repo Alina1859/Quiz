@@ -4,7 +4,7 @@ import { signSessionToken } from '@/app/lib/session-token'
 import { v4 as uuidv4 } from 'uuid'
 import { consumeDailyRateLimit } from '@/app/lib/rate-limit'
 
-const DAILY_LIMIT = 10
+const DAILY_LIMIT = 14
 const RATE_LIMIT_ROUTE = 'quiz:start'
 
 export async function POST(req: NextRequest) {

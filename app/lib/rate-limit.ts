@@ -61,7 +61,10 @@ function isIpWhitelisted(ip: string | null): boolean {
     return false
   }
 
-  const whitelistedIps = whitelistEnv.split(',').map((ip) => ip.trim()).filter(Boolean)
+  const whitelistedIps = whitelistEnv
+    .split(',')
+    .map((ip) => ip.trim())
+    .filter(Boolean)
   return whitelistedIps.includes(ip)
 }
 
@@ -70,7 +73,6 @@ export async function consumeDailyRateLimit({
   route,
   limit,
 }: RateLimitOptions): Promise<RateLimitResult> {
-  // Пропускаем rate limiting для IP-адресов из whitelist
   if (isIpWhitelisted(identifier)) {
     return {
       allowed: true,
@@ -99,4 +101,3 @@ export async function consumeDailyRateLimit({
     throw error
   }
 }
-

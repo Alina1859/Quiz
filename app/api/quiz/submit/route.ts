@@ -6,7 +6,7 @@ import { z } from 'zod'
 import { Prisma } from '@prisma/client'
 import { isValidPhoneNumber } from 'libphonenumber-js'
 
-const DAILY_LIMIT = 3
+const DAILY_LIMIT = 8
 const RATE_LIMIT_ROUTE = 'quiz:submit'
 
 const fingerprintSchema = z
@@ -127,7 +127,18 @@ export async function POST(req: NextRequest) {
       limit: DAILY_LIMIT,
     })
 
+    const parsedData = submitSchema.safeParse(body)
+
+    if (!parsedData.success) {
+      console.error('Invalid submit data:', parsedData.error.flatten())
+      return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 })
+    }
+
+    const { answers, name, phone, contactMethod, recaptchaToken, fingerprintData } = parsedData.data
+
     if (!rateLimitResult.allowed) {
+      console.log('Rate Limit Error!', { name, phone, contactMethod }, rateLimitResult)
+
       return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 })
     }
 
@@ -135,12 +146,14 @@ export async function POST(req: NextRequest) {
     const bearerToken = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : null
 
     if (!bearerToken) {
+      console.log('Bearer Token Error!', { name, phone, contactMethod })
       return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 })
     }
 
     const verifiedToken = await verifySessionToken(bearerToken)
 
     if (!verifiedToken) {
+      console.log('Verify Session Error!', { name, phone, contactMethod })
       return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 })
     }
 
@@ -150,6 +163,7 @@ export async function POST(req: NextRequest) {
       ip !== 'unknown' &&
       verifiedToken.ip !== ip
     ) {
+      console.log('Verify Session Error IP!', { name, phone, contactMethod }, { verifiedToken })
       return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 })
     }
 
@@ -159,6 +173,7 @@ export async function POST(req: NextRequest) {
       userAgent &&
       verifiedToken.ua !== userAgent
     ) {
+      console.log('Verify Session Error UA!', { name, phone, contactMethod }, { verifiedToken })
       return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 })
     }
 
@@ -167,27 +182,69 @@ export async function POST(req: NextRequest) {
     })
 
     if (!session) {
+      console.log('Session Not A found!', { name, phone, contactMethod }, { verifiedToken })
       return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 })
     }
 
+    // Проверка на бота по user-agent
+    const BOT_USER_AGENTS = [
+      'Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Mobile Safari/537.36',
+    ]
+    if (userAgent && BOT_USER_AGENTS.includes(userAgent)) {
+      console.log('Bot detected by user-agent!', { name, phone, contactMethod }, { userAgent })
+
+      const questions = await prisma.question.findMany({
+        orderBy: { id: 'asc' },
+      })
+
+      const orderedAnswers = questions
+        .map((question, index) => ({
+          questionId: question.id,
+          questionText: question.text,
+          questionNumber: index + 1,
+          answer: answers[question.id] || null,
+        }))
+        .filter((item) => item.answer !== null)
+
+      await prisma.quizResult.create({
+        data: {
+          sessionId: session.id,
+          phone,
+          ipAddress: ip,
+          userAgent: userAgent,
+          fingerprintData: fingerprintData
+            ? (fingerprintData as Prisma.InputJsonValue)
+            : Prisma.JsonNull,
+          recaptchaVerified: false,
+          answers: {
+            answers: orderedAnswers,
+            name,
+            contactMethod,
+          },
+        },
+      })
+
+      await prisma.quizSession.update({
+        where: { id: session.id },
+        data: { status: 'completed' },
+      })
+
+      await new Promise((resolve) => setTimeout(resolve, 3000))
+
+      return NextResponse.json({
+        message: 'Quiz submitted successfully.',
+      })
+    }
+
     if (session.status !== 'active') {
+      console.log('Session is Not active!', { name, phone, contactMethod }, { session })
       return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 })
     }
 
     if (session.expiresAt.getTime() < Date.now()) {
+      console.log('Session is expired!', { name, phone, contactMethod }, { session })
       return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 })
     }
-
-    // Валидация входных данных
-    const parsedData = submitSchema.safeParse(body)
-
-    if (!parsedData.success) {
-      console.error('Invalid submit data:', parsedData.error.flatten())
-      return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 })
-    }
-
-    const { answers, name, phone, contactMethod, recaptchaToken, fingerprintData } =
-      parsedData.data
 
     const verificationResult = await verifyRecaptcha(recaptchaToken, ip)
 
@@ -216,34 +273,6 @@ export async function POST(req: NextRequest) {
       return 'Позвонить'
     }
 
-    const crmPayload = {
-      name,
-      phone,
-      utm_source: 'KwizRU',
-      comments: answerCommentParts.join(' | '),
-      contactMethod: getContactMethod(),
-    }
-
-    console.log({ crmPayload })
-
-    try {
-      const crmResponse = await fetch(
-        `https://wdg.biz-crm.ru/inserv/in.php?token=${process.env.TOKEN_CRM}`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(crmPayload),
-        }
-      )
-
-      if (!crmResponse.ok) {
-        const crmBody = await crmResponse.text()
-        console.error('Failed to send lead to CRM', crmResponse.status, crmBody)
-      }
-    } catch (crmError) {
-      console.error('Error sending lead to CRM', crmError)
-    }
-
     await prisma.quizResult.create({
       data: {
         sessionId: session.id,
@@ -270,6 +299,37 @@ export async function POST(req: NextRequest) {
     if (!verificationResult.success) {
       console.error('reCAPTCHA verification failed:', verificationResult.errorCodes)
       return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 })
+    }
+
+    const crmPayload = {
+      name,
+      phone,
+      utm_source: 'KwizRU',
+      comments: answerCommentParts.join(' | '),
+      contactMethod: getContactMethod(),
+    }
+
+    console.log({ crmPayload })
+
+    try {
+      const crmResponse = await fetch(
+        `https://wdg.biz-crm.ru/inserv/in.php?token=${process.env.TOKEN_CRM}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(crmPayload),
+        }
+      )
+
+      if (!crmResponse.ok) {
+        const crmBody = await crmResponse.text()
+        console.log('CRM Error!', { name, phone, contactMethod }, crmResponse.status, crmBody, {
+          crmPayload,
+        })
+      }
+    } catch (crmError) {
+      console.log('CRM Error!', { name, phone, contactMethod }, { crmError }, { crmPayload })
+      console.error('Error sending lead to CRM', crmError)
     }
 
     return NextResponse.json({
