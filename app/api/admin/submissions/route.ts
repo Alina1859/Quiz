@@ -14,17 +14,10 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { searchParams } = new URL(req.url)
-    const page = parseInt(searchParams.get('page') || '1', 10)
-    const limit = 20
-    const skip = (page - 1) * limit
-
     const total = await prisma.quizResult.count()
 
     const results = await prisma.quizResult.findMany({
       orderBy: { createdAt: 'desc' },
-      skip,
-      take: limit,
     })
 
     type SubmissionAnswers = {
@@ -64,15 +57,13 @@ export async function GET(req: NextRequest) {
       }
     })
 
-    const totalPages = Math.ceil(total / limit)
-
     return NextResponse.json({
       submissions,
       pagination: {
-        page,
-        limit,
+        page: 1,
+        limit: total,
         total,
-        totalPages,
+        totalPages: 1,
       },
     })
   } catch (error) {
