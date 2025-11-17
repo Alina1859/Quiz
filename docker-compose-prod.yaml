@@ -18,7 +18,7 @@ services:
       - .env
     environment:
       DATABASE_URL: file:/app/data/sqlite.db
-      CRM_PROXY_URL: http://host.docker.internal:4001/send-crm
+      CRM_PROXY_URL: http://172.18.0.1:4001/send-crm
     build:
       context: ./
       dockerfile: Dockerfile
