@@ -161,6 +161,29 @@ export async function POST(req: NextRequest) {
     const ip = forwardedFor?.split(',')[0]?.trim() || realIp || 'unknown'
     const userAgent = req.headers.get('user-agent') || null
 
+    if (ip !== 'unknown') {
+      const blockedIpClient = (prisma as any)?.blockedIp
+
+      if (blockedIpClient?.findUnique) {
+        const blockedIp = await blockedIpClient.findUnique({
+          where: { ipAddress: ip },
+        })
+
+        if (blockedIp) {
+          console.log('Blocked IP attempt detected, returning success response', {
+            ip,
+            name: body?.name,
+            phone: body?.phone,
+            blockedId: blockedIp.id,
+          })
+          return NextResponse.json({
+            success: true,
+            message: 'Quiz submitted successfully.',
+          })
+        }
+      }
+    }
+
     const rateLimitResult = await consumeDailyRateLimit({
       identifier: ip,
       route: RATE_LIMIT_ROUTE,
@@ -414,6 +437,7 @@ export async function POST(req: NextRequest) {
     })()
 
     return NextResponse.json({
+      success: true,
       message: 'Quiz submitted successfully.',
     })
   } catch (e) {

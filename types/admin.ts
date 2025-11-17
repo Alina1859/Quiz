@@ -38,6 +38,22 @@ export interface CardDataProps {
   submissions: Submission[]
 }
 
+export interface BlockedIpEntry {
+  id: number
+  ipAddress: string
+  reason: string | null
+  createdBy: string | null
+  createdAt: string
+}
+
+export interface CardBlockedIpsProps {
+  blockedIps: BlockedIpEntry[]
+  isLoading: boolean
+  isSaving: boolean
+  onAdd: (ipAddress: string, reason: string) => Promise<void>
+  onRemove: (id: number) => Promise<void>
+}
+
 export interface QuestionDrafts {
   [questionId: number]: string | undefined
 }

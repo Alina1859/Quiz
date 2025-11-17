@@ -11,7 +11,8 @@ import { CardData } from './components/CardData/CardData'
 import { CardEditQuiz } from './components/CardEditQuiz/CardEditQuiz'
 import { AdminPagination } from './components/Pagination/Pagination'
 import { CardApplication } from './components/CardApplication/CardApplication'
-import type { Submission, RecaptchaFilterValue } from '@/types/admin'
+import { CardBlockedIps } from './components/CardBlockedIps/CardBlockedIps'
+import type { Submission, RecaptchaFilterValue, BlockedIpEntry } from '@/types/admin'
 
 const PAGE_SIZE = 20
 
@@ -26,6 +27,9 @@ export default function AdminPage() {
   const [currentPage, setCurrentPage] = useState(1)
   const [recaptchaFilter, setRecaptchaFilter] = useState<RecaptchaFilterValue>('all')
   const [searchQuery, setSearchQuery] = useState('')
+  const [blockedIps, setBlockedIps] = useState<BlockedIpEntry[]>([])
+  const [isLoadingBlockedIps, setIsLoadingBlockedIps] = useState(false)
+  const [isSavingBlockedIp, setIsSavingBlockedIp] = useState(false)
 
   const totalSubmissions = allSubmissions.length
 
@@ -65,6 +69,7 @@ export default function AdminPage() {
   useEffect(() => {
     if (isAuthenticated) {
       fetchSubmissions()
+      fetchBlockedIps()
     }
   }, [isAuthenticated])
 
@@ -106,6 +111,71 @@ export default function AdminPage() {
       console.error('Error fetching submissions:', error)
     } finally {
       setIsLoadingSubmissions(false)
+    }
+  }
+
+  const fetchBlockedIps = async () => {
+    setIsLoadingBlockedIps(true)
+    try {
+      const response = await fetch('/api/admin/blocked-ips')
+      const data = await response.json()
+
+      if (response.ok && Array.isArray(data.blockedIps)) {
+        setBlockedIps(data.blockedIps)
+      } else {
+        console.error('Error fetching blocked IPs:', data.error)
+      }
+    } catch (error) {
+      console.error('Error fetching blocked IPs:', error)
+    } finally {
+      setIsLoadingBlockedIps(false)
+    }
+  }
+
+  const handleAddBlockedIp = async (ipAddress: string, reason: string) => {
+    setIsSavingBlockedIp(true)
+    try {
+      const response = await fetch('/api/admin/blocked-ips', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ ipAddress, reason }),
+      })
+
+      const data = await response.json()
+
+      if (response.ok && data.blockedIp) {
+        setBlockedIps((prev) => [data.blockedIp, ...prev])
+        return
+      }
+
+      const errorMessage =
+        typeof data?.error === 'string' ? data.error : 'Не удалось добавить IP-адрес'
+      throw new Error(errorMessage)
+    } finally {
+      setIsSavingBlockedIp(false)
+    }
+  }
+
+  const handleRemoveBlockedIp = async (id: number) => {
+    try {
+      const response = await fetch('/api/admin/blocked-ips', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ id }),
+      })
+
+      if (!response.ok) {
+        console.error('Failed to delete blocked IP')
+        return
+      }
+
+      setBlockedIps((prev) => prev.filter((item) => item.id !== id))
+    } catch (error) {
+      console.error('Error deleting blocked IP:', error)
     }
   }
 
@@ -193,6 +263,7 @@ export default function AdminPage() {
               <TabsTrigger value="answers">Ответы пользователей</TabsTrigger>
               <TabsTrigger value="edit-quiz">Редактировать квиз</TabsTrigger>
               <TabsTrigger value="database">Data</TabsTrigger>
+              <TabsTrigger value="blocked-ips">Заблокированные IP</TabsTrigger>
             </TabsList>
             <TabsContent value="answers">
               <CardAnswers
@@ -232,6 +303,15 @@ export default function AdminPage() {
                   isDisabled={totalFilteredSubmissions === 0}
                 />
               </div>
+            </TabsContent>
+            <TabsContent value="blocked-ips">
+              <CardBlockedIps
+                blockedIps={blockedIps}
+                isLoading={isLoadingBlockedIps}
+                isSaving={isSavingBlockedIp}
+                onAdd={handleAddBlockedIp}
+                onRemove={handleRemoveBlockedIp}
+              />
             </TabsContent>
           </Tabs>
         </div>

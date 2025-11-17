@@ -39,3 +39,11 @@ enum SessionStatus {
   active
   completed
 }
+
+model BlockedIp {
+  id        Int      @id @default(autoincrement())
+  ipAddress String   @unique
+  reason    String?
+  createdBy String?
+  createdAt DateTime @default(now())
+}
