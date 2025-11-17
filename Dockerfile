@@ -7,6 +7,12 @@ ENV DATABASE_URL=file:/app/data/sqlite.db
 
 WORKDIR /app
 
+RUN sed -i 's|deb.debian.org|mirror.yandex.ru|g' /etc/apt/sources.list \
+  && sed -i 's|security.debian.org|mirror.yandex.ru/debian-security|g' /etc/apt/sources.list
+
+RUN apt-get update \
+  && apt-get install -y --no-install-recommends curl iproute2 iputils-ping \
+  && rm -rf /var/lib/apt/lists/*
 
 FROM base AS deps
 
