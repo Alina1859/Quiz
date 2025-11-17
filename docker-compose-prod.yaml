@@ -1,11 +1,24 @@
 version: "3.3"
 
 services:
+  crm-proxy:
+    build:
+      context: ./crm-proxy
+      dockerfile: Dockerfile
+    container_name: crm-proxy
+    env_file:
+      - .env
+    environment:
+      CRM_PROXY_PORT: 4001
+    restart: unless-stopped
+    network_mode: host
+
   front-prod:
     env_file:
       - .env
     environment:
       DATABASE_URL: file:/app/data/sqlite.db
+      CRM_PROXY_URL: http://host.docker.internal:4001/send-crm
     build:
       context: ./
       dockerfile: Dockerfile
@@ -16,6 +29,8 @@ services:
       - "traefik.http.routers.front-prod.entrypoints=websecure"
       - "traefik.http.routers.front-prod.tls.certresolver=myresolver"
       - "traefik.http.services.front-prod.loadbalancer.server.port=3000"
+    depends_on:
+      - crm-proxy
     volumes:
       - db-data-prod:/app/data
     networks:

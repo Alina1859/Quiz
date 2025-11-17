@@ -386,16 +386,29 @@ export async function POST(req: NextRequest) {
     ;(async function () {
       console.log({ crmPayload })
 
-      console.log(`https://wdg.biz-crm.ru/inserv/in.php?token=${process.env.TOKEN_CRM}`)
+      const crmProxyUrl = process.env.CRM_PROXY_URL?.trim()
+      const directToken = process.env.TOKEN_CRM
+      const directCrmUrl =
+        directToken && directToken.length > 0
+          ? `https://wdg.biz-crm.ru/inserv/in.php?token=${directToken}`
+          : null
+      const crmEndpoint = crmProxyUrl && crmProxyUrl.length > 0 ? crmProxyUrl : directCrmUrl
+
+      if (!crmEndpoint) {
+        console.error('CRM endpoint is not configured', {
+          hasProxy: Boolean(crmProxyUrl),
+          hasToken: Boolean(directToken),
+        })
+        return
+      }
+
+      console.log(`Sending CRM payload to ${crmEndpoint}`)
       try {
-        const crmResponse = await fetch(
-          `https://wdg.biz-crm.ru/inserv/in.php?token=${process.env.TOKEN_CRM}`,
-          {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(crmPayload),
-          }
-        )
+        const crmResponse = await fetch(crmEndpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(crmPayload),
+        })
 
         if (!crmResponse.ok) {
           const crmBody = await crmResponse.text()
