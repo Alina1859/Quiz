@@ -387,24 +387,15 @@ export async function POST(req: NextRequest) {
       console.log({ crmPayload })
 
       const crmProxyUrl = process.env.CRM_PROXY_URL?.trim()
-      const directToken = process.env.TOKEN_CRM
-      const directCrmUrl =
-        directToken && directToken.length > 0
-          ? `https://wdg.biz-crm.ru/inserv/in.php?token=${directToken}`
-          : null
-      const crmEndpoint = crmProxyUrl && crmProxyUrl.length > 0 ? crmProxyUrl : directCrmUrl
 
-      if (!crmEndpoint) {
-        console.error('CRM endpoint is not configured', {
-          hasProxy: Boolean(crmProxyUrl),
-          hasToken: Boolean(directToken),
-        })
+      if (!crmProxyUrl) {
+        console.error('CRM proxy URL is not configured')
         return
       }
 
-      console.log(`Sending CRM payload to ${crmEndpoint}`)
+      console.log(`Sending CRM payload to proxy ${crmProxyUrl}`)
       try {
-        const crmResponse = await fetch(crmEndpoint, {
+        const crmResponse = await fetch(crmProxyUrl, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(crmPayload),
