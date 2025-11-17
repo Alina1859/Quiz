@@ -9,6 +9,7 @@ services:
     build:
       context: ./
       dockerfile: Dockerfile
+      network: host
     container_name: front-prod
     labels:
       - "traefik.enable=true"
