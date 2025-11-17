@@ -7,6 +7,10 @@ ENV DATABASE_URL=file:/app/data/sqlite.db
 
 WORKDIR /app
 
+RUN apt-get update \
+  && apt-get install -y --no-install-recommends curl \
+  && rm -rf /var/lib/apt/lists/*
+
 FROM base AS deps
 
 COPY package.json package-lock.json ./
