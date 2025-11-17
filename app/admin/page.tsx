@@ -132,8 +132,17 @@ export default function AdminPage() {
     }
   }
 
-  const handleAddBlockedIp = async (ipAddress: string, reason: string) => {
-    setIsSavingBlockedIp(true)
+  const handleAddBlockedIp = async (
+    ipAddress: string,
+    reason: string,
+    options?: { silent?: boolean }
+  ) => {
+    const shouldToggleSaving = !options?.silent
+
+    if (shouldToggleSaving) {
+      setIsSavingBlockedIp(true)
+    }
+
     try {
       const response = await fetch('/api/admin/blocked-ips', {
         method: 'POST',
@@ -147,16 +156,24 @@ export default function AdminPage() {
 
       if (response.ok && data.blockedIp) {
         setBlockedIps((prev) => [data.blockedIp, ...prev])
-        return
+        return data.blockedIp
       }
 
       const errorMessage =
         typeof data?.error === 'string' ? data.error : 'Не удалось добавить IP-адрес'
       throw new Error(errorMessage)
     } finally {
-      setIsSavingBlockedIp(false)
+      if (shouldToggleSaving) {
+        setIsSavingBlockedIp(false)
+      }
     }
   }
+
+  const handleQuickBlockIp = (
+    ipAddress: string,
+    reason = 'Блокировка из таблицы ответов',
+    options: { silent?: boolean } = { silent: true }
+  ) => handleAddBlockedIp(ipAddress, reason, options)
 
   const handleRemoveBlockedIp = async (id: number) => {
     try {
@@ -275,6 +292,8 @@ export default function AdminPage() {
                 onSearchQueryChange={setSearchQuery}
                 recaptchaFilter={recaptchaFilter}
                 onRecaptchaFilterChange={setRecaptchaFilter}
+                blockedIps={blockedIps}
+                onBlockIp={handleQuickBlockIp}
               />
               <div className="mt-6">
                 <AdminPagination

@@ -52,6 +52,7 @@ export async function GET(req: NextRequest) {
         fingerprint: visitorId || fingerprintData || null,
         fingerprintData: fingerprintData || null,
         recaptchaVerified: result.recaptchaVerified,
+        botDetectionReason: (result as any).botDetectionReason || null,
         createdAt: result.createdAt.toISOString(),
         answers: answers || null,
       }

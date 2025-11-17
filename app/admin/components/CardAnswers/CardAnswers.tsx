@@ -1,5 +1,7 @@
 'use client'
 
+import { useMemo, useState } from 'react'
+
 import { AdminTableCell } from '../TableCell/TableCell'
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -19,6 +21,30 @@ const isEmptyValue = (value: unknown): boolean => {
   if (value === null || value === undefined) return true
   if (typeof value === 'string' && value.trim() === '') return true
   return false
+}
+
+const formatBotDetectionReason = (reason?: string | null): string => {
+  if (!reason || reason.trim().length === 0) {
+    return '—'
+  }
+
+  const normalized = reason.trim().toLowerCase()
+
+  if (normalized.startsWith('blocked ip') || normalized === 'blocked_ip') {
+    const detail = reason.split(':')[1]?.trim()
+    return detail && detail.length > 0 ? `Блокировка по IP: ${detail}` : 'Блокировка по IP'
+  }
+
+  if (
+    normalized.includes('user-agent') ||
+    normalized === 'user agent' ||
+    normalized === 'bot_user_agent' ||
+    normalized === 'bot user agent'
+  ) {
+    return 'User-Agent из списка ботов'
+  }
+
+  return reason
 }
 
 const extractSearchableString = (value: unknown): string | null => {
@@ -305,6 +331,13 @@ export const searchInSubmission = (
   // Поиск по User Agent
   if (submission.userAgent && submission.userAgent.toLowerCase().includes(query)) return true
 
+  if (
+    submission.botDetectionReason &&
+    submission.botDetectionReason.toLowerCase().includes(query)
+  ) {
+    return true
+  }
+
   // Поиск по данным сессии (fingerprintData и fingerprint)
   const fingerprintData = isRecord(submission?.fingerprintData)
     ? (submission.fingerprintData as Record<string, unknown>)
@@ -361,7 +394,68 @@ export function CardAnswers({
   onSearchQueryChange,
   recaptchaFilter,
   onRecaptchaFilterChange,
+  blockedIps,
+  onBlockIp,
 }: CardAnswersProps) {
+  const [blockingIps, setBlockingIps] = useState<Record<string, boolean>>({})
+  const [localBotReasons, setLocalBotReasons] = useState<Record<number, string>>({})
+  const [blockErrors, setBlockErrors] = useState<Record<number, string>>({})
+
+  const blockedIpSet = useMemo(() => {
+    if (!blockedIps) return new Set<string>()
+    return new Set(blockedIps.map((entry) => entry.ipAddress))
+  }, [blockedIps])
+
+  const handleBlockIpClick = async (submissionId: number, ipAddressValue: string) => {
+    if (!onBlockIp) return
+    const normalizedIp = ipAddressValue.trim()
+
+    if (!normalizedIp || normalizedIp === 'Не указано' || normalizedIp === 'unknown') {
+      return
+    }
+
+    setBlockErrors((prev) => {
+      const next = { ...prev }
+      delete next[submissionId]
+      return next
+    })
+    setBlockingIps((prev) => ({ ...prev, [normalizedIp]: true }))
+
+    try {
+      const result = await onBlockIp(
+        normalizedIp,
+        'Блокировка из таблицы ответов',
+        { silent: true }
+      )
+
+      const responseReason =
+        (result && result.reason && result.reason.trim().length > 0
+          ? result.reason.trim()
+          : 'Блокировка из таблицы ответов') || 'Блокировка из таблицы ответов'
+
+      const storedReason = responseReason.toLowerCase().startsWith('blocked ip')
+        ? responseReason
+        : `Blocked IP: ${responseReason}`
+
+      setLocalBotReasons((prev) => ({
+        ...prev,
+        [submissionId]: storedReason,
+      }))
+    } catch (error) {
+      setBlockErrors((prev) => ({
+        ...prev,
+        [submissionId]:
+          error instanceof Error ? error.message : 'Не удалось заблокировать IP',
+      }))
+    } finally {
+      setBlockingIps((prev) => {
+        const next = { ...prev }
+        delete next[normalizedIp]
+        return next
+      })
+    }
+  }
+
   return (
     <Card className="bg-muted text-card-foreground flex flex-col gap-4 rounded-lg border p-1 py-0">
       <div className="flex flex-col gap-3 px-2 pt-3">
@@ -418,6 +512,9 @@ export function CardAnswers({
                 reCAPTCHA
               </TableHead>
               <TableHead className="h-10 px-2 text-left align-middle whitespace-nowrap border-r border-border text-muted-foreground text-xs font-medium tracking-wider uppercase">
+                Причина бота
+              </TableHead>
+              <TableHead className="h-10 px-2 text-left align-middle whitespace-nowrap border-r border-border text-muted-foreground text-xs font-medium tracking-wider uppercase">
                 Данные сессии
               </TableHead>
               <TableHead className="h-10 px-2 text-left align-middle whitespace-nowrap text-muted-foreground text-xs font-medium tracking-wider uppercase">
@@ -431,7 +528,7 @@ export function CardAnswers({
                 <AdminTableCell
                   bordered={false}
                   nowrap={false}
-                  colSpan={8}
+                  colSpan={9}
                   className="text-center py-8"
                 >
                   Загрузка данных...
@@ -442,7 +539,7 @@ export function CardAnswers({
                 <AdminTableCell
                   bordered={false}
                   nowrap={false}
-                  colSpan={8}
+                  colSpan={9}
                   className="text-center py-8"
                 >
                   Нет заявок
@@ -453,7 +550,7 @@ export function CardAnswers({
                 <AdminTableCell
                   bordered={false}
                   nowrap={false}
-                  colSpan={8}
+                  colSpan={9}
                   className="text-center py-8"
                 >
                   {searchQuery.trim()
@@ -466,7 +563,7 @@ export function CardAnswers({
                 <AdminTableCell
                   bordered={false}
                   nowrap={false}
-                  colSpan={8}
+                  colSpan={9}
                   className="text-center py-8"
                 >
                   Нет заявок на этой странице
@@ -481,6 +578,16 @@ export function CardAnswers({
                   hour: '2-digit',
                   minute: '2-digit',
                 })
+                const normalizedIpAddress =
+                  typeof row.ipAddress === 'string' ? row.ipAddress.trim() : ''
+                const isBlocking = Boolean(blockingIps[normalizedIpAddress])
+                const isAlreadyBlocked =
+                  blockedIpSet.has(normalizedIpAddress) ||
+                  Boolean(localBotReasons[row.id]) ||
+                  Boolean(
+                    row.botDetectionReason &&
+                      row.botDetectionReason.toLowerCase().includes('blocked ip')
+                  )
                 return (
                   <TableRow key={row.id} className="border-b transition-colors hover:bg-muted/50">
                     <AdminTableCell>
@@ -512,6 +619,30 @@ export function CardAnswers({
                       ) : (
                         <span className="text-red-600 font-medium">Бот</span>
                       )}
+                    </AdminTableCell>
+                    <AdminTableCell>
+                      <div className="flex flex-col gap-2">
+                        <span className="text-muted-foreground text-sm">
+                          {formatBotDetectionReason(
+                            localBotReasons[row.id] ?? row.botDetectionReason
+                          )}
+                        </span>
+                        {onBlockIp &&
+                          normalizedIpAddress &&
+                          normalizedIpAddress !== 'Не указано' && (
+                          <button
+                            type="button"
+                            onClick={() => handleBlockIpClick(row.id, normalizedIpAddress)}
+                            disabled={isBlocking || isAlreadyBlocked}
+                            className="inline-flex items-center justify-center rounded-md border border-border bg-background px-3 py-1 text-xs font-medium text-foreground hover:bg-accent hover:text-accent-foreground transition-colors disabled:opacity-50 disabled:pointer-events-none"
+                          >
+                            {isBlocking ? 'Блокировка...' : 'Заблокировать IP'}
+                          </button>
+                        )}
+                        {blockErrors[row.id] && (
+                          <span className="text-xs text-destructive">{blockErrors[row.id]}</span>
+                        )}
+                      </div>
                     </AdminTableCell>
                     <AdminTableCell nowrap={false}>
                       <div className="text-xs text-muted-foreground whitespace-pre-wrap break-words max-w-xs">

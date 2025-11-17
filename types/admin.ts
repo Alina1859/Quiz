@@ -7,6 +7,7 @@ export interface Submission {
   fingerprint: any | null
   fingerprintData: any | null
   recaptchaVerified: boolean | null
+  botDetectionReason?: string | null
   createdAt: string
   answers: {
     answers: Array<{
@@ -22,6 +23,14 @@ export interface Submission {
 
 export type RecaptchaFilterValue = 'all' | 'human' | 'bot'
 
+export interface BlockedIpEntry {
+  id: number
+  ipAddress: string
+  reason: string | null
+  createdBy: string | null
+  createdAt: string
+}
+
 export interface CardAnswersProps {
   isLoadingSubmissions: boolean
   submissions: Submission[]
@@ -31,6 +40,12 @@ export interface CardAnswersProps {
   onSearchQueryChange: (value: string) => void
   recaptchaFilter: RecaptchaFilterValue
   onRecaptchaFilterChange: (value: RecaptchaFilterValue) => void
+  blockedIps?: BlockedIpEntry[]
+  onBlockIp?: (
+    ipAddress: string,
+    reason?: string,
+    options?: { silent?: boolean }
+  ) => Promise<BlockedIpEntry | void>
 }
 
 export interface CardDataProps {
@@ -38,19 +53,15 @@ export interface CardDataProps {
   submissions: Submission[]
 }
 
-export interface BlockedIpEntry {
-  id: number
-  ipAddress: string
-  reason: string | null
-  createdBy: string | null
-  createdAt: string
-}
-
 export interface CardBlockedIpsProps {
   blockedIps: BlockedIpEntry[]
   isLoading: boolean
   isSaving: boolean
-  onAdd: (ipAddress: string, reason: string) => Promise<void>
+  onAdd: (
+    ipAddress: string,
+    reason: string,
+    options?: { silent?: boolean }
+  ) => Promise<BlockedIpEntry | void>
   onRemove: (id: number) => Promise<void>
 }
 

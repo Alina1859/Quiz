@@ -161,29 +161,6 @@ export async function POST(req: NextRequest) {
     const ip = forwardedFor?.split(',')[0]?.trim() || realIp || 'unknown'
     const userAgent = req.headers.get('user-agent') || null
 
-    if (ip !== 'unknown') {
-      const blockedIpClient = (prisma as any)?.blockedIp
-
-      if (blockedIpClient?.findUnique) {
-        const blockedIp = await blockedIpClient.findUnique({
-          where: { ipAddress: ip },
-        })
-
-        if (blockedIp) {
-          console.log('Blocked IP attempt detected, returning success response', {
-            ip,
-            name: body?.name,
-            phone: body?.phone,
-            blockedId: blockedIp.id,
-          })
-          return NextResponse.json({
-            success: true,
-            message: 'Quiz submitted successfully.',
-          })
-        }
-      }
-    }
-
     const rateLimitResult = await consumeDailyRateLimit({
       identifier: ip,
       route: RATE_LIMIT_ROUTE,
@@ -250,18 +227,15 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 })
     }
 
-    // Проверка на бота по user-agent
-    const BOT_USER_AGENTS = [
-      'Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Mobile Safari/537.36',
-    ]
-    if (userAgent && BOT_USER_AGENTS.includes(userAgent)) {
-      console.log('Bot detected by user-agent!', { name, phone, contactMethod }, { userAgent })
+    const blockedIpClient = (prisma as any)?.blockedIp
+    const quizResultClient: any = (prisma as any)?.quizResult ?? prisma.quizResult
 
+    const buildOrderedAnswers = async () => {
       const questions = await prisma.question.findMany({
         orderBy: { id: 'asc' },
       })
 
-      const orderedAnswers = questions
+      return questions
         .map((question, index) => ({
           questionId: question.id,
           questionText: question.text,
@@ -269,24 +243,35 @@ export async function POST(req: NextRequest) {
           answer: answers[question.id] || null,
         }))
         .filter((item) => item.answer !== null)
+    }
+
+    const getContactMethodLabel = () => {
+      if (contactMethod === 'whatsapp') return 'Написать в Whatsapp'
+      if (contactMethod === 'telegram') return 'Написать в Telegram'
+      return 'Позвонить'
+    }
+
+    const completeBotSubmission = async (reasonLabel: string) => {
+      const orderedAnswers = await buildOrderedAnswers()
 
       const submitTimestamp = new Date()
       const timeDifferenceMs = submitTimestamp.getTime() - session.createdAt.getTime()
       const timeDifferenceSeconds = Math.round(timeDifferenceMs / 1000)
       const timeDifferenceFormatted = formatTimeDifference(timeDifferenceSeconds)
 
-      console.log('Quiz completion time:', {
+      console.log('Bot submission recorded', {
         sessionId: session.id,
         name,
         phone,
         contactMethod,
+        reasonLabel,
         sessionStart: session.createdAt.toISOString(),
         submitTime: submitTimestamp.toISOString(),
         timeDifferenceSeconds,
         timeDifferenceFormatted,
       })
 
-      await prisma.quizResult.create({
+      await quizResultClient.create({
         data: {
           sessionId: session.id,
           phone,
@@ -296,6 +281,7 @@ export async function POST(req: NextRequest) {
             ? addServerTimestamp(fingerprintData, session.createdAt)
             : Prisma.JsonNull,
           recaptchaVerified: false,
+          botDetectionReason: reasonLabel,
           answers: {
             answers: orderedAnswers,
             name,
@@ -313,8 +299,41 @@ export async function POST(req: NextRequest) {
       await new Promise((resolve) => setTimeout(resolve, randomDelay))
 
       return NextResponse.json({
+        success: true,
         message: 'Quiz submitted successfully.',
       })
+    }
+
+    if (ip !== 'unknown' && blockedIpClient?.findUnique) {
+      const blockedIp = await blockedIpClient.findUnique({
+        where: { ipAddress: ip },
+      })
+
+      if (blockedIp) {
+        const reasonLabel =
+          typeof blockedIp.reason === 'string' && blockedIp.reason.trim().length > 0
+            ? `Blocked IP: ${blockedIp.reason.trim()}`
+            : 'Blocked IP'
+
+        console.log('Blocked IP attempt detected, returning success response', {
+          ip,
+          name,
+          phone,
+          blockedId: blockedIp.id,
+          reasonLabel,
+        })
+
+        return completeBotSubmission(reasonLabel)
+      }
+    }
+
+    // Проверка на бота по user-agent
+    const BOT_USER_AGENTS = [
+      'Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Mobile Safari/537.36',
+    ]
+    if (userAgent && BOT_USER_AGENTS.includes(userAgent)) {
+      console.log('Bot detected by user-agent!', { name, phone, contactMethod }, { userAgent })
+      return completeBotSubmission('User-Agent blacklist')
     }
 
     if (session.status !== 'active') {
@@ -331,28 +350,11 @@ export async function POST(req: NextRequest) {
 
     const recaptchaVerified = verificationResult.success
 
-    const questions = await prisma.question.findMany({
-      orderBy: { id: 'asc' },
-    })
-
-    const orderedAnswers = questions
-      .map((question, index) => ({
-        questionId: question.id,
-        questionText: question.text,
-        questionNumber: index + 1,
-        answer: answers[question.id] || null,
-      }))
-      .filter((item) => item.answer !== null)
+    const orderedAnswers = await buildOrderedAnswers()
 
     const answerCommentParts = orderedAnswers.map(
       (item) => `${item.questionNumber}. (${item.questionText}): ${item.answer}`
     )
-
-    function getContactMethod() {
-      if (contactMethod === 'whatsapp') return 'Написать в Whatsapp'
-      if (contactMethod === 'telegram') return 'Написать в Telegram'
-      return 'Позвонить'
-    }
 
     const submitTimestamp = new Date()
     const timeDifferenceMs = submitTimestamp.getTime() - session.createdAt.getTime()
@@ -370,7 +372,7 @@ export async function POST(req: NextRequest) {
       timeDifferenceFormatted,
     })
 
-    await prisma.quizResult.create({
+    await quizResultClient.create({
       data: {
         sessionId: session.id,
         phone,
@@ -403,7 +405,7 @@ export async function POST(req: NextRequest) {
       phone,
       utm_source: 'KwizRU',
       comments: answerCommentParts.join(' | '),
-      contactMethod: getContactMethod(),
+      contactMethod: getContactMethodLabel(),
     }
 
     ;(async function () {
