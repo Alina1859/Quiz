@@ -18,7 +18,7 @@ RUN set -eux; \
   fi
 
 RUN apt-get update \
-  && apt-get install -y --no-install-recommends curl iproute2 iputils-ping \
+  && apt-get install -y --no-install-recommends ca-certificates curl iproute2 iputils-ping \
   && rm -rf /var/lib/apt/lists/*
 
 FROM base AS deps
