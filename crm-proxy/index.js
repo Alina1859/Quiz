@@ -2,8 +2,7 @@ import http from 'node:http'
 
 const PORT = Number.parseInt(process.env.CRM_PROXY_PORT ?? '4001', 10)
 const CRM_TOKEN = process.env.TOKEN_CRM ?? process.env.CRM_TOKEN ?? process.env.CRM_TOKEN_ID
-const CRM_BASE_URL =
-  process.env.CRM_BASE_URL ?? 'https://wdg.biz-crm.ru/inserv/in.php'
+const CRM_BASE_URL = process.env.CRM_BASE_URL ?? 'https://wdg.biz-crm.ru/inserv/in.php'
 const REQUEST_TIMEOUT_MS = Number.parseInt(process.env.CRM_PROXY_TIMEOUT_MS ?? '15000', 10)
 
 function buildCrmUrl() {
@@ -22,6 +21,7 @@ async function forwardToCrm(payload) {
   const controller = new AbortController()
   const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS)
 
+  console.log({ crmUrl })
   try {
     const crmResponse = await fetch(crmUrl, {
       method: 'POST',
@@ -30,8 +30,11 @@ async function forwardToCrm(payload) {
       signal: controller.signal,
     })
 
+    console.log({ 'crmResponse.status': crmResponse.status })
+
     const textBody = await crmResponse.text()
 
+    console.log({ textBody })
     return {
       status: crmResponse.status,
       body: textBody,
@@ -103,4 +106,3 @@ const server = http.createServer(async (req, res) => {
 server.listen(PORT, () => {
   console.log(`CRM proxy listening on port ${PORT}`)
 })
-
