@@ -8,7 +8,7 @@ ENV DATABASE_URL=file:/app/data/sqlite.db
 WORKDIR /app
 
 RUN apt-get update \
-  && apt-get install -y --no-install-recommends curl \
+  && apt-get install -y --no-install-recommends curl iproute2 iputils-ping \
   && rm -rf /var/lib/apt/lists/*
 
 FROM base AS deps
