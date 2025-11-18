@@ -372,6 +372,38 @@ export async function POST(req: NextRequest) {
       timeDifferenceFormatted,
     })
 
+    // Проверка на забаненные квизы по visitorID
+    if (fingerprintData?.visitorId) {
+      const visitorId = fingerprintData.visitorId
+      
+      // Поиск всех забаненных квизов (recaptchaVerified: false)
+      const bannedResults = await quizResultClient.findMany({
+        where: {
+          recaptchaVerified: false,
+        },
+      })
+
+      // Проверка, есть ли среди забаненных квизов записи с таким же visitorID
+      const hasBannedVisitorId = bannedResults.some((result: any) => {
+        if (!result.fingerprintData || typeof result.fingerprintData !== 'object') {
+          return false
+        }
+        const fpData = result.fingerprintData as Record<string, unknown>
+        return fpData.visitorId === visitorId
+      })
+
+      if (hasBannedVisitorId) {
+        console.log('Banned visitorID detected!', {
+          visitorId,
+          name,
+          phone,
+          contactMethod,
+        })
+        
+        return completeBotSubmission('Banned visitorID')
+      }
+    }
+
     await quizResultClient.create({
       data: {
         sessionId: session.id,
