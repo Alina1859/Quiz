@@ -27,7 +27,7 @@ export const metadata: Metadata = {
   description:
     'Недвижимость Дубая напрямую от застройщиков. Рассрочка 0% до 7 лет. Вся база недвижимости ОАЭ',
   verification: {
-    yandex: "8dea18e78f02a1d4"
+    yandex: '8dea18e78f02a1d4',
   },
   openGraph: {
     title: 'DDA Real Estate — Недвижимость ОАЭ от застройщиков',
@@ -39,9 +39,9 @@ export const metadata: Metadata = {
     type: 'website',
     images: [
       {
-        url: '/favicon/web-app-manifest-512x512.png',
+        url: 'https://emirates-property.ru/images/Background_Photo_OpenGraph.jpg',
         width: 1200,
-        height: 630,
+        height: 600,
         alt: 'DDA Real Estate — Недвижимость в Дубае',
       },
     ],
@@ -71,14 +71,14 @@ export default function RootLayout({
       style={{ height: '100%' }}
       className={`${bebasNeue.variable} ${interTight.variable}`}
     >
-    <body style={{ height: '100%', margin: 0, padding: 0, overflowY: 'auto' }}>
-    <Script
-      src={`https://www.google.com/recaptcha/api.js?render=${recaptchaSiteKey}`}
-      strategy="afterInteractive"
-    />
-    <YandexMetrika />
-    {children}
-    </body>
+      <body style={{ height: '100%', margin: 0, padding: 0, overflowY: 'auto' }}>
+        <Script
+          src={`https://www.google.com/recaptcha/api.js?render=${recaptchaSiteKey}`}
+          strategy="afterInteractive"
+        />
+        <YandexMetrika />
+        {children}
+      </body>
     </html>
   )
 }
